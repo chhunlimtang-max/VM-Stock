@@ -3,265 +3,545 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ប្រព័ន្ធគ្រប់គ្រងស្តុកទំនិញ (VM-Stock)</title>
+  <title>ប្រព័ន្ធគ្រប់គ្រងស្តុកទំនិញ (VM-Stock Cloud)</title>
+  
+  <!-- Google Fonts: Inter & Battambang for clean Khmer typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
     :root {
       --primary: #2563eb;
-      --primary-dark: #1d4ed8;
+      --primary-hover: #1d4ed8;
+      --success: #10b981;
+      --success-hover: #059669;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --warning: #f59e0b;
       --bg: #f8fafc;
       --surface: #ffffff;
-      --text: #1e293b;
       --border: #e2e8f0;
-      --success: #16a34a;
-      --danger: #dc2626;
-      --warning: #d97706;
+      --text: #0f172a;
+      --text-muted: #64748b;
+      --badge-in: #dcfce7;
+      --badge-in-txt: #166534;
+      --badge-out: #fee2e2;
+      --badge-out-txt: #991b1b;
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 1rem; }
-    .container { max-width: 1100px; margin: 0 auto; }
-    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-    h1 { font-size: 1.5rem; color: #0f172a; }
-    .btn { background: var(--primary); color: #fff; border: none; padding: 0.6rem 1rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.9rem; }
-    .btn:hover { background: var(--primary-dark); }
-    .btn-danger { background: var(--danger); }
-    .btn-danger:hover { background: #b91c1c; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Battambang', system-ui, sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 1.25rem; }
+    .container { max-width: 1200px; margin: 0 auto; }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand h1 { font-size: 1.4rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      background: #e0f2fe;
+      color: #0369a1;
+      font-weight: 600;
+    }
+    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #0284c7; }
+
+    /* Summary Cards */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .kpi-card h4 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .kpi-card .val { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
+
+    /* Nav Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 1.25rem;
+      overflow-x: auto;
+    }
+    .tab-btn {
+      padding: 0.65rem 1.2rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* Cards & Tables */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+    .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+    .grid-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      padding: 0.65rem 1.1rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      color: white;
+    }
+    .btn-primary { background: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
     .btn-success { background: var(--success); }
-    .btn-success:hover { background: #15803d; }
-    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
-    .grid-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.75rem; margin-bottom: 1rem; }
-    input, select { width: 100%; padding: 0.55rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9rem; }
+    .btn-success:hover { background: var(--success-hover); }
+    .btn-danger { background: var(--danger); }
+    .btn-danger:hover { background: var(--danger-hover); }
+    .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
+
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 0.75rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-    th { background: #f1f5f9; color: #475569; }
-    .badge { padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
-    .badge-in { background: #dcfce7; color: #15803d; }
-    .badge-out { background: #fee2e2; color: #b91c1c; }
-    .search-bar { width: 100%; padding: 0.6rem; margin-bottom: 1rem; }
+    th, td { padding: 0.85rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    th { background: #f8fafc; color: var(--text-muted); font-weight: 600; }
+    tbody tr:hover { background-color: #f1f5f9; }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .badge-in { background: var(--badge-in); color: var(--badge-in-txt); }
+    .badge-out { background: var(--badge-out); color: var(--badge-out-txt); }
+    .badge-low { background: #fef3c7; color: #b45309; }
+
+    .search-filter-bar {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+    .search-filter-bar input { flex: 2; min-width: 220px; }
+    .search-filter-bar select { flex: 1; min-width: 150px; }
+
+    .pagination {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    .pagination-actions { display: flex; gap: 0.5rem; }
   </style>
+
+  <!-- Firebase App & Database Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
 <div class="container">
   <header>
-    <h1>📦 ប្រព័ន្ធគ្រប់គ្រងស្តុក (VM-Stock)</h1>
-    <div style="font-size: 0.85rem; color: #64748b;" id="storage-status">ស្ថានភាពផ្ទុកទិន្នន័យ៖ ដំណើរការធម្មតា</div>
+    <div class="brand">
+      <h1>📦 ប្រព័ន្ធគ្រប់គ្រងស្តុក (VM-Stock Cloud)</h1>
+    </div>
+    <div class="status-badge">
+      <span class="status-dot"></span>
+      <span id="sync-status">Cloud ភ្ជាប់ជោគជ័យ</span>
+    </div>
   </header>
 
-  <!-- Add Item Form -->
-  <div class="card">
-    <h3 style="margin-bottom: 0.75rem;">➕ បន្ថែមទំនិញថ្មី (Add New Item)</h3>
-    <form id="addItemForm" class="grid-form">
-      <input type="text" id="itemName" placeholder="ឈ្មោះទំនិញ (Item Name)" required>
-      <input type="text" id="itemCategory" placeholder="ប្រភេទ (Category)" required>
-      <input type="number" id="itemQty" placeholder="ចំនួនដើម (Qty)" min="0" required>
-      <input type="number" id="itemCost" placeholder="តម្លៃដើម ($ Cost)" step="0.01" required>
-      <input type="number" id="itemPrice" placeholder="តម្លៃលក់ ($ Price)" step="0.01" required>
-      <button type="submit" class="btn">រក្សាទុក (Save)</button>
-    </form>
-  </div>
-
-  <!-- Stock IN / OUT Form -->
-  <div class="card">
-    <h3 style="margin-bottom: 0.75rem;">🔄 កត់ត្រា នាំចូល / នាំចេញ (Stock In / Out)</h3>
-    <form id="stockActionForm" class="grid-form">
-      <select id="actionItemSelect" required>
-        <option value="">-- ជ្រើសរើសទំនិញ (Select Item) --</option>
-      </select>
-      <select id="actionType" required>
-        <option value="IN">📥 នាំចូល (Stock In)</option>
-        <option value="OUT">📤 នាំចេញ (Stock Out)</option>
-      </select>
-      <input type="number" id="actionQty" placeholder="ចំនួន (Quantity)" min="1" required>
-      <input type="text" id="actionNote" placeholder="សម្គាល់ (Reason/Note)">
-      <button type="submit" class="btn btn-success">កត់ត្រា (Confirm)</button>
-    </form>
-  </div>
-
-  <!-- Items Table -->
-  <div class="card">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 0.5rem;">
-      <h3>📋 បញ្ជីទំនិញក្នុងស្តុក</h3>
-      <input type="text" id="searchBar" class="search-bar" placeholder="ស្វែងរកតាមឈ្មោះ ឬប្រភេទ..." style="max-width: 300px; margin-bottom: 0;">
+  <!-- KPI Summary Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <h4>មុខទំនិញសរុប (Total Items)</h4>
+      <div class="val" id="totalItemsCount">0</div>
     </div>
-    <div style="overflow-x: auto;">
-      <table id="inventoryTable">
-        <thead>
-          <tr>
-            <th>ឈ្មោះទំនិញ</th>
-            <th>ប្រភេទ</th>
-            <th>ចំនួននៅសល់</th>
-            <th>តម្លៃដើម</th>
-            <th>តម្លៃលក់</th>
-            <th>សកម្មភាព</th>
-          </tr>
-        </thead>
-        <tbody id="inventoryBody"></tbody>
-      </table>
+    <div class="kpi-card">
+      <h4>ទំនិញជិតអស់ (Low Stock $\le$ 5)</h4>
+      <div class="val" id="lowStockCount" style="color: var(--danger);">0</div>
+    </div>
+    <div class="kpi-card">
+      <h4>តម្លៃសរុបក្នុងស្តុក (USD)</h4>
+      <div class="val" id="totalStockValueUSD">$0.00</div>
+    </div>
+    <div class="kpi-card">
+      <h4>តម្លៃសរុបគិតជាប្រាក់រៀល (KHR)</h4>
+      <div class="val" id="totalStockValueKHR" style="color: var(--primary);">0 ៛</div>
     </div>
   </div>
 
-  <!-- History Log -->
-  <div class="card">
-    <h3>🕒 ប្រវត្តិ នាំចូល/នាំចេញ (Transaction History)</h3>
-    <div style="overflow-x: auto; margin-top: 0.5rem;">
-      <table>
-        <thead>
-          <tr>
-            <th>កាលបរិច្ឆេទ & ម៉ោង</th>
-            <th>ទំនិញ</th>
-            <th>ប្រភេទ</th>
-            <th>ចំនួន</th>
-            <th>សម្គាល់</th>
-          </tr>
-        </thead>
-        <tbody id="historyBody"></tbody>
-      </table>
+  <!-- Navigation -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab('tab-items')">📋 បញ្ជីទំនិញ (Inventory)</button>
+    <button class="tab-btn" onclick="switchTab('tab-stock-action')">🔄 នាំចូល / នាំចេញស្តុក (In / Out)</button>
+    <button class="tab-btn" onclick="switchTab('tab-history')">🕒 ប្រវត្តិប្រតិបត្តិការ (History)</button>
+  </div>
+
+  <!-- TAB 1: Inventory Table & Add Item -->
+  <div id="tab-items" class="tab-pane active">
+    <!-- Add Item Form -->
+    <div class="card">
+      <div class="card-title">➕ បន្ថែមទំនិញថ្មី (Add New Item)</div>
+      <form id="addItemForm" class="grid-form">
+        <input type="text" id="itemName" placeholder="ឈ្មោះទំនិញ (Item Name)" required>
+        <input type="text" id="itemCategory" placeholder="ប្រភេទ (Category) ឧ៖ ភេសជ្ជៈ, គ្រឿងទេស" required>
+        <input type="number" id="itemQty" placeholder="ចំនួនដើម (Qty)" min="0" required>
+        <input type="number" id="itemCost" placeholder="តម្លៃដើម ($ Cost)" step="0.01" min="0" required>
+        <input type="number" id="itemPrice" placeholder="តម្លៃលក់ ($ Price)" step="0.01" min="0" required>
+        <button type="submit" class="btn btn-primary">💾 រក្សាទុកទំនិញ</button>
+      </form>
+    </div>
+
+    <!-- Items List Table -->
+    <div class="card">
+      <div class="search-filter-bar">
+        <input type="text" id="searchBar" placeholder="🔍 ស្វែងរកតាមឈ្មោះទំនិញ ឬប្រភេទ...">
+        <select id="categoryFilter">
+          <option value="">-- ប្រភេទទាំងអស់ --</option>
+        </select>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ឈ្មោះទំនិញ</th>
+              <th>ប្រភេទ</th>
+              <th>ចំនួននៅសល់</th>
+              <th>តម្លៃដើម ($)</th>
+              <th>តម្លៃលក់ ($)</th>
+              <th>តម្លៃលក់ (៛)</th>
+              <th>សកម្មភាព</th>
+            </tr>
+          </thead>
+          <tbody id="inventoryBody"></tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <span id="pageInfo">ទំព័រ 1</span>
+        <div class="pagination-actions">
+          <button class="btn btn-primary btn-sm" id="prevPageBtn" onclick="prevPage()">ថយក្រោយ</button>
+          <button class="btn btn-primary btn-sm" id="nextPageBtn" onclick="nextPage()">បន្ទាប់</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Stock Actions (In / Out) -->
+  <div id="tab-stock-action" class="tab-pane">
+    <div class="card">
+      <div class="card-title">🔄 កត់ត្រាការ នាំចូល ឬ នាំចេញស្តុក</div>
+      <form id="stockActionForm" class="grid-form">
+        <select id="actionItemSelect" required>
+          <option value="">-- ជ្រើសរើសទំនិញ --</option>
+        </select>
+        <select id="actionType" required>
+          <option value="IN">📥 នាំចូលស្តុក (Stock In)</option>
+          <option value="OUT">📤 នាំចេញស្តុក (Stock Out)</option>
+        </select>
+        <input type="number" id="actionQty" placeholder="ចំនួន (Quantity)" min="1" required>
+        <input type="text" id="actionNote" placeholder="កំណត់ចំណាំ/មូលហេតុ (Note)">
+        <button type="submit" class="btn btn-success">កត់ត្រាប្រតិបត្តិការ</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- TAB 3: History Log -->
+  <div id="tab-history" class="tab-pane">
+    <div class="card">
+      <div class="card-title">🕒 កំណត់ត្រាប្រវត្តិ នាំចូល/នាំចេញ (History Log)</div>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>កាលបរិច្ឆេទ & ម៉ោង</th>
+              <th>ឈ្មោះទំនិញ</th>
+              <th>ប្រភេទប្រតិបត្តិការ</th>
+              <th>ចំនួន</th>
+              <th>ចំណាំ</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
-  // Persistent data keys
-  const ITEMS_KEY = 'vm_stock_items_data';
-  const HISTORY_KEY = 'vm_stock_history_data';
+  // 1. Firebase Initialization with your exact keys
+  const firebaseConfig = {
+    apiKey: "AIzaSyDRfWtHN35bfbk9VnM4j-AdwNLEtiBZMII",
+    authDomain: "vm-stock-5595f.firebaseapp.com",
+    databaseURL: "https://vm-stock-5595f-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "vm-stock-5595f",
+    storageBucket: "vm-stock-5595f.firebasestorage.app",
+    messagingSenderId: "712570267647",
+    appId: "1:712570267647:web:21c10a4cac6ec7648ea9ca",
+    measurementId: "G-C0PFEW5T60"
+  };
 
-  // Load saved data or initialize empty arrays
-  let items = JSON.parse(localStorage.getItem(ITEMS_KEY)) || [
-    { id: '1', name: 'កូកាកូឡា (Coca Cola)', category: 'ភេសជ្ជៈ', qty: 50, cost: 0.40, price: 0.60 }
-  ];
-  let history = JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
-  function saveData() {
-    localStorage.setItem(ITEMS_KEY, JSON.stringify(items));
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
-    render();
+  const EXCHANGE_RATE = 4100; // USD to KHR
+  let items = [];
+  let history = [];
+
+  let currentPage = 1;
+  const pageSize = 15;
+
+  // Real-time Cloud Listeners
+  db.ref('items').on('value', (snapshot) => {
+    const val = snapshot.val();
+    items = val ? Object.keys(val).map(key => ({ id: key, ...val[key] })) : [];
+    updateDashboard();
+  }, (error) => {
+    document.getElementById('sync-status').textContent = 'ភ្ជាប់ Cloud មិនជោគជ័យ';
+  });
+
+  db.ref('history').limitToLast(50).on('value', (snapshot) => {
+    const val = snapshot.val();
+    history = val ? Object.keys(val).map(key => ({ id: key, ...val[key] })).reverse() : [];
+    renderHistory();
+  });
+
+  // UI Tabs
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    event.target.classList.add('active');
   }
 
-  // Handle Add Item
-  document.getElementById('addItemForm').addEventListener('submit', function(e) {
+  // Add Item
+  document.getElementById('addItemForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const newItem = {
-      id: Date.now().toString(),
       name: document.getElementById('itemName').value.trim(),
       category: document.getElementById('itemCategory').value.trim(),
       qty: parseInt(document.getElementById('itemQty').value, 10),
       cost: parseFloat(document.getElementById('itemCost').value),
-      price: parseFloat(document.getElementById('itemPrice').value)
+      price: parseFloat(document.getElementById('itemPrice').value),
+      updatedAt: Date.now()
     };
-    items.push(newItem);
-    saveData();
-    this.reset();
+    db.ref('items').push(newItem);
+    e.target.reset();
   });
 
-  // Handle Stock Action (In/Out)
-  document.getElementById('stockActionForm').addEventListener('submit', function(e) {
+  // Handle Stock In/Out
+  document.getElementById('stockActionForm').addEventListener('submit', (e) => {
     e.preventDefault();
     const itemId = document.getElementById('actionItemSelect').value;
     const type = document.getElementById('actionType').value;
     const qty = parseInt(document.getElementById('actionQty').value, 10);
-    const note = document.getElementById('actionNote').value.trim();
+    const note = document.getElementById('actionNote').value.trim() || '-';
 
     const target = items.find(i => i.id === itemId);
     if (!target) return;
 
     if (type === 'OUT' && target.qty < qty) {
-      alert('ចំនួនក្នុងស្តុកមិនគ្រប់គ្រាន់ទេ! (Not enough stock)');
+      alert('ចំនួនក្នុងស្តុកមិនគ្រប់គ្រាន់ទេ!');
       return;
     }
 
-    target.qty = type === 'IN' ? target.qty + qty : target.qty - qty;
-
-    history.unshift({
-      id: Date.now().toString(),
+    const newQty = type === 'IN' ? target.qty + qty : target.qty - qty;
+    
+    // Cloud Updates
+    db.ref('items/' + itemId).update({ qty: newQty });
+    db.ref('history').push({
       itemName: target.name,
       type: type,
       qty: qty,
-      note: note || '-',
+      note: note,
       date: new Date().toLocaleString('km-KH')
     });
 
-    saveData();
-    this.reset();
+    e.target.reset();
+    switchTab('tab-items');
   });
 
   // Delete Item
-  window.deleteItem = function(id) {
-    if (confirm('តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ? (Are you sure you want to delete?)')) {
-      items = items.filter(i => i.id !== id);
-      saveData();
+  window.deleteItem = (id) => {
+    if (confirm('តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ?')) {
+      db.ref('items/' + id).remove();
     }
   };
 
-  // Search Filter
-  document.getElementById('searchBar').addEventListener('input', function() {
-    renderInventory(this.value.trim().toLowerCase());
-  });
+  // Rendering & Search Filtering
+  function updateDashboard() {
+    renderInventory();
+    populateSelects();
+    updateKPICards();
+  }
 
-  function renderInventory(query = '') {
+  function renderInventory() {
+    const search = document.getElementById('searchBar').value.toLowerCase();
+    const category = document.getElementById('categoryFilter').value;
+
+    const filtered = items.filter(i => {
+      const matchSearch = i.name.toLowerCase().includes(search) || i.category.toLowerCase().includes(search);
+      const matchCategory = !category || i.category === category;
+      return matchSearch && matchCategory;
+    });
+
+    const totalPages = Math.ceil(filtered.length / pageSize) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+
+    const start = (currentPage - 1) * pageSize;
+    const pageItems = filtered.slice(start, start + pageSize);
+
     const tbody = document.getElementById('inventoryBody');
     tbody.innerHTML = '';
-    const filtered = items.filter(i => 
-      i.name.toLowerCase().includes(query) || i.category.toLowerCase().includes(query)
-    );
 
-    if (filtered.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#94a3b8;">គ្មានទិន្នន័យ (No items found)</td></tr>';
-      return;
+    if (pageItems.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">គ្មានទិន្នន័យទំនិញឡើយ</td></tr>';
+    } else {
+      pageItems.forEach(i => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><strong>${i.name}</strong></td>
+          <td><span class="badge" style="background:#f1f5f9; color:#475569;">${i.category}</span></td>
+          <td>
+            <span class="badge ${i.qty <= 5 ? 'badge-low' : ''}" style="${i.qty <= 5 ? '' : 'font-weight:700;'}">
+              ${i.qty.toLocaleString()}
+            </span>
+          </td>
+          <td>$${i.cost.toFixed(2)}</td>
+          <td>$${i.price.toFixed(2)}</td>
+          <td>${Math.round(i.price * EXCHANGE_RATE).toLocaleString()} ៛</td>
+          <td>
+            <button class="btn btn-danger btn-sm" onclick="deleteItem('${i.id}')">លុប</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
     }
 
-    filtered.forEach(i => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td><strong>${i.name}</strong></td>
-        <td>${i.category}</td>
-        <td style="font-weight:bold; color:${i.qty <= 5 ? 'red' : 'inherit'}">${i.qty}</td>
-        <td>$${i.cost.toFixed(2)}</td>
-        <td>$${i.price.toFixed(2)}</td>
-        <td><button class="btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteItem('${i.id}')">លុប</button></td>
-      `;
-      tbody.appendChild(row);
-    });
+    document.getElementById('pageInfo').textContent = `ទំព័រ ${currentPage} នៃ ${totalPages} (${filtered.length} មុខ)`;
   }
 
   function renderHistory() {
     const tbody = document.getElementById('historyBody');
     tbody.innerHTML = '';
     if (history.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">គ្មានប្រវត្តិប្រតិបត្តិការ (No history)</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">មិនទាន់មានប្រវត្តិប្រតិបត្តិការឡើយ</td></tr>';
       return;
     }
-    history.slice(0, 30).forEach(h => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
+    history.forEach(h => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
         <td>${h.date}</td>
         <td><strong>${h.itemName}</strong></td>
-        <td><span class="badge ${h.type === 'IN' ? 'badge-in' : 'badge-out'}">${h.type === 'IN' ? 'នាំចូល' : 'នាំចេញ'}</span></td>
-        <td>${h.qty}</td>
+        <td><span class="badge ${h.type === 'IN' ? 'badge-in' : 'badge-out'}">${h.type === 'IN' ? '📥 នាំចូល' : '📤 នាំចេញ'}</span></td>
+        <td>${h.qty.toLocaleString()}</td>
         <td>${h.note}</td>
       `;
-      tbody.appendChild(row);
+      tbody.appendChild(tr);
     });
   }
 
-  function populateSelect() {
-    const select = document.getElementById('actionItemSelect');
-    select.innerHTML = '<option value="">-- ជ្រើសរើសទំនិញ (Select Item) --</option>';
+  function populateSelects() {
+    const actionSelect = document.getElementById('actionItemSelect');
+    const catFilter = document.getElementById('categoryFilter');
+    const currentCat = catFilter.value;
+
+    actionSelect.innerHTML = '<option value="">-- ជ្រើសរើសទំនិញ --</option>';
+    catFilter.innerHTML = '<option value="">-- ប្រភេទទាំងអស់ --</option>';
+
+    const categories = new Set();
+
     items.forEach(i => {
+      categories.add(i.category);
       const opt = document.createElement('option');
       opt.value = i.id;
-      opt.textContent = `${i.name} (សល់: ${i.qty})`;
-      select.appendChild(opt);
+      opt.textContent = `${i.name} (នៅសល់: ${i.qty})`;
+      actionSelect.appendChild(opt);
+    });
+
+    categories.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      opt.textContent = c;
+      if (c === currentCat) opt.selected = true;
+      catFilter.appendChild(opt);
     });
   }
 
-  function render() {
-    renderInventory();
-    renderHistory();
-    populateSelect();
+  function updateKPICards() {
+    const totalItems = items.length;
+    const lowStock = items.filter(i => i.qty <= 5).length;
+    const totalValUSD = items.reduce((acc, i) => acc + (i.qty * i.cost), 0);
+
+    document.getElementById('totalItemsCount').textContent = totalItems.toLocaleString();
+    document.getElementById('lowStockCount').textContent = lowStock.toLocaleString();
+    document.getElementById('totalStockValueUSD').textContent = '$' + totalValUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    document.getElementById('totalStockValueKHR').textContent = Math.round(totalValUSD * EXCHANGE_RATE).toLocaleString() + ' ៛';
   }
 
-  // Initial render
-  render();
+  function prevPage() { if (currentPage > 1) { currentPage--; renderInventory(); } }
+  function nextPage() { currentPage++; renderInventory(); }
+
+  document.getElementById('searchBar').addEventListener('input', () => { currentPage = 1; renderInventory(); });
+  document.getElementById('categoryFilter').addEventListener('change', () => { currentPage = 1; renderInventory(); });
 </script>
 </body>
 </html>
