@@ -3,545 +3,1155 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ប្រព័ន្ធគ្រប់គ្រងស្តុកទំនិញ (VM-Stock Cloud)</title>
+  <title>ប្រព័ន្ធគ្រប់គ្រងស្តុកទំនិញ - VM-Stock Cloud</title>
   
-  <!-- Google Fonts: Inter & Battambang for clean Khmer typography -->
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts: Kantumruy Pro for Khmer and Inter for Latin/Numbers -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Kantumruy+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <style>
-    :root {
-      --primary: #2563eb;
-      --primary-hover: #1d4ed8;
-      --success: #10b981;
-      --success-hover: #059669;
-      --danger: #ef4444;
-      --danger-hover: #dc2626;
-      --warning: #f59e0b;
-      --bg: #f8fafc;
-      --surface: #ffffff;
-      --border: #e2e8f0;
-      --text: #0f172a;
-      --text-muted: #64748b;
-      --badge-in: #dcfce7;
-      --badge-in-txt: #166534;
-      --badge-out: #fee2e2;
-      --badge-out-txt: #991b1b;
-    }
-
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', 'Battambang', system-ui, sans-serif; }
-    body { background-color: var(--bg); color: var(--text); padding: 1.25rem; }
-    .container { max-width: 1200px; margin: 0 auto; }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border);
-      flex-wrap: wrap;
-      gap: 1rem;
-    }
-
-    .brand h1 { font-size: 1.4rem; font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 0.5rem; }
-    .status-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.85rem;
-      padding: 0.35rem 0.75rem;
-      border-radius: 9999px;
-      background: #e0f2fe;
-      color: #0369a1;
-      font-weight: 600;
-    }
-    .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #0284c7; }
-
-    /* Summary Cards */
-    .kpi-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .kpi-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-    .kpi-card h4 { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-    .kpi-card .val { font-size: 1.4rem; font-weight: 700; color: #0f172a; }
-
-    /* Nav Tabs */
-    .nav-tabs {
-      display: flex;
-      gap: 0.5rem;
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 1.25rem;
-      overflow-x: auto;
-    }
-    .tab-btn {
-      padding: 0.65rem 1.2rem;
-      background: none;
-      border: none;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -2px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      color: var(--text-muted);
-      cursor: pointer;
-      white-space: nowrap;
-    }
-    .tab-btn.active {
-      color: var(--primary);
-      border-bottom-color: var(--primary);
-    }
-
-    .tab-pane { display: none; }
-    .tab-pane.active { display: block; }
-
-    /* Cards & Tables */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.25rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-    }
-    .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-
-    .grid-form {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 0.85rem;
-      margin-bottom: 1rem;
-    }
-    input, select {
-      width: 100%;
-      padding: 0.65rem 0.85rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.9rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input:focus, select:focus { border-color: var(--primary); }
-
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-      padding: 0.65rem 1.1rem;
-      border-radius: 8px;
-      border: none;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-      transition: background-color 0.2s;
-      color: white;
-    }
-    .btn-primary { background: var(--primary); }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-success { background: var(--success); }
-    .btn-success:hover { background: var(--success-hover); }
-    .btn-danger { background: var(--danger); }
-    .btn-danger:hover { background: var(--danger-hover); }
-    .btn-sm { padding: 0.4rem 0.75rem; font-size: 0.8rem; }
-
-    table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 0.85rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-    th { background: #f8fafc; color: var(--text-muted); font-weight: 600; }
-    tbody tr:hover { background-color: #f1f5f9; }
-
-    .badge {
-      display: inline-block;
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 700;
-    }
-    .badge-in { background: var(--badge-in); color: var(--badge-in-txt); }
-    .badge-out { background: var(--badge-out); color: var(--badge-out-txt); }
-    .badge-low { background: #fef3c7; color: #b45309; }
-
-    .search-filter-bar {
-      display: flex;
-      gap: 0.75rem;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-    }
-    .search-filter-bar input { flex: 2; min-width: 220px; }
-    .search-filter-bar select { flex: 1; min-width: 150px; }
-
-    .pagination {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 1rem;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-    .pagination-actions { display: flex; gap: 0.5rem; }
-  </style>
-
-  <!-- Firebase App & Database Scripts -->
+  <!-- Firebase Compat Libraries -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Kantumruy Pro"', 'Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#2563eb',
+              600: '#1d4ed8',
+              700: '#1e40af',
+              800: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Kantumruy Pro', 'Inter', sans-serif;
+      background-color: #f8fafc;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f1f5f9;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #94a3b8;
+    }
+    .badge-in {
+      background-color: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+    .badge-out {
+      background-color: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+    @media print {
+      .no-print { display: none !important; }
+      .print-only { display: block !important; }
+    }
+  </style>
 </head>
-<body>
+<body class="text-slate-800 antialiased min-h-screen flex flex-col">
 
-<div class="container">
-  <header>
-    <div class="brand">
-      <h1>📦 ប្រព័ន្ធគ្រប់គ្រងស្តុក (VM-Stock Cloud)</h1>
-    </div>
-    <div class="status-badge">
-      <span class="status-dot"></span>
-      <span id="sync-status">Cloud ភ្ជាប់ជោគជ័យ</span>
-    </div>
-  </header>
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm no-print">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <!-- Logo & Title -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/20">
+            <i class="fa-solid fa-boxes-stacked text-lg"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-lg text-slate-900 leading-tight">ប្រព័ន្ធគ្រប់គ្រងស្តុក</h1>
+            <p class="text-xs text-slate-500 font-medium">VM-Stock Realtime Cloud</p>
+          </div>
+        </div>
 
-  <!-- KPI Summary Cards -->
-  <div class="kpi-grid">
-    <div class="kpi-card">
-      <h4>មុខទំនិញសរុប (Total Items)</h4>
-      <div class="val" id="totalItemsCount">0</div>
-    </div>
-    <div class="kpi-card">
-      <h4>ទំនិញជិតអស់ (Low Stock $\le$ 5)</h4>
-      <div class="val" id="lowStockCount" style="color: var(--danger);">0</div>
-    </div>
-    <div class="kpi-card">
-      <h4>តម្លៃសរុបក្នុងស្តុក (USD)</h4>
-      <div class="val" id="totalStockValueUSD">$0.00</div>
-    </div>
-    <div class="kpi-card">
-      <h4>តម្លៃសរុបគិតជាប្រាក់រៀល (KHR)</h4>
-      <div class="val" id="totalStockValueKHR" style="color: var(--primary);">0 ៛</div>
-    </div>
-  </div>
+        <!-- Sync Status & Quick Actions -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          <div id="syncStatusBadge" class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+            <span id="syncText">ពពកភ្ជាប់រួចរាល់ (Online)</span>
+          </div>
 
-  <!-- Navigation -->
-  <div class="nav-tabs">
-    <button class="tab-btn active" onclick="switchTab('tab-items')">📋 បញ្ជីទំនិញ (Inventory)</button>
-    <button class="tab-btn" onclick="switchTab('tab-stock-action')">🔄 នាំចូល / នាំចេញស្តុក (In / Out)</button>
-    <button class="tab-btn" onclick="switchTab('tab-history')">🕒 ប្រវត្តិប្រតិបត្តិការ (History)</button>
-  </div>
-
-  <!-- TAB 1: Inventory Table & Add Item -->
-  <div id="tab-items" class="tab-pane active">
-    <!-- Add Item Form -->
-    <div class="card">
-      <div class="card-title">➕ បន្ថែមទំនិញថ្មី (Add New Item)</div>
-      <form id="addItemForm" class="grid-form">
-        <input type="text" id="itemName" placeholder="ឈ្មោះទំនិញ (Item Name)" required>
-        <input type="text" id="itemCategory" placeholder="ប្រភេទ (Category) ឧ៖ ភេសជ្ជៈ, គ្រឿងទេស" required>
-        <input type="number" id="itemQty" placeholder="ចំនួនដើម (Qty)" min="0" required>
-        <input type="number" id="itemCost" placeholder="តម្លៃដើម ($ Cost)" step="0.01" min="0" required>
-        <input type="number" id="itemPrice" placeholder="តម្លៃលក់ ($ Price)" step="0.01" min="0" required>
-        <button type="submit" class="btn btn-primary">💾 រក្សាទុកទំនិញ</button>
-      </form>
-    </div>
-
-    <!-- Items List Table -->
-    <div class="card">
-      <div class="search-filter-bar">
-        <input type="text" id="searchBar" placeholder="🔍 ស្វែងរកតាមឈ្មោះទំនិញ ឬប្រភេទ...">
-        <select id="categoryFilter">
-          <option value="">-- ប្រភេទទាំងអស់ --</option>
-        </select>
-      </div>
-
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>ឈ្មោះទំនិញ</th>
-              <th>ប្រភេទ</th>
-              <th>ចំនួននៅសល់</th>
-              <th>តម្លៃដើម ($)</th>
-              <th>តម្លៃលក់ ($)</th>
-              <th>តម្លៃលក់ (៛)</th>
-              <th>សកម្មភាព</th>
-            </tr>
-          </thead>
-          <tbody id="inventoryBody"></tbody>
-        </table>
-      </div>
-
-      <div class="pagination">
-        <span id="pageInfo">ទំព័រ 1</span>
-        <div class="pagination-actions">
-          <button class="btn btn-primary btn-sm" id="prevPageBtn" onclick="prevPage()">ថយក្រោយ</button>
-          <button class="btn btn-primary btn-sm" id="nextPageBtn" onclick="nextPage()">បន្ទាប់</button>
+          <!-- Fast In/Out Header Buttons -->
+          <button onclick="openStockModal('IN')" class="inline-flex items-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-medium rounded-lg shadow-sm transition">
+            <i class="fa-solid fa-arrow-down mr-1.5"></i>
+            <span>នាំចូលស្តុក</span>
+          </button>
+          <button onclick="openStockModal('OUT')" class="inline-flex items-center px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-medium rounded-lg shadow-sm transition">
+            <i class="fa-solid fa-arrow-up mr-1.5"></i>
+            <span>នាំចេញស្តុក</span>
+          </button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- TAB 2: Stock Actions (In / Out) -->
-  <div id="tab-stock-action" class="tab-pane">
-    <div class="card">
-      <div class="card-title">🔄 កត់ត្រាការ នាំចូល ឬ នាំចេញស្តុក</div>
-      <form id="stockActionForm" class="grid-form">
-        <select id="actionItemSelect" required>
-          <option value="">-- ជ្រើសរើសទំនិញ --</option>
-        </select>
-        <select id="actionType" required>
-          <option value="IN">📥 នាំចូលស្តុក (Stock In)</option>
-          <option value="OUT">📤 នាំចេញស្តុក (Stock Out)</option>
-        </select>
-        <input type="number" id="actionQty" placeholder="ចំនួន (Quantity)" min="1" required>
-        <input type="text" id="actionNote" placeholder="កំណត់ចំណាំ/មូលហេតុ (Note)">
-        <button type="submit" class="btn btn-success">កត់ត្រាប្រតិបត្តិការ</button>
+    <!-- Navigation Tabs -->
+    <div class="bg-slate-50 border-t border-slate-200 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex space-x-2 overflow-x-auto custom-scrollbar py-2">
+        <button id="tabBtnItems" onclick="switchTab('items')" class="nav-tab px-4 py-2 text-sm font-medium rounded-lg text-blue-700 bg-blue-100 whitespace-nowrap transition flex items-center space-x-2">
+          <i class="fa-solid fa-box-archive"></i>
+          <span>បញ្ជីទំនិញក្នុងស្តុក (Items)</span>
+        </button>
+        <button id="tabBtnHistory" onclick="switchTab('history')" class="nav-tab px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center space-x-2">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>ប្រវត្តិនាំចូល/ចេញ (History)</span>
+        </button>
+        <button id="tabBtnCategories" onclick="switchTab('categories')" class="nav-tab px-4 py-2 text-sm font-medium rounded-lg text-slate-600 hover:bg-slate-200/70 whitespace-nowrap transition flex items-center space-x-2">
+          <i class="fa-solid fa-tags"></i>
+          <span>ប្រភេទមុខទំនិញ (Categories)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    
+    <!-- Top KPI Cards -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4 no-print">
+      <!-- Total Items -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">មុខទំនិញសរុប</p>
+          <h3 id="metricTotalTypes" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">មុខទំនិញទាំងអស់</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-cubes"></i>
+        </div>
+      </div>
+
+      <!-- Total Quantity Left -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ចំនួននៅសល់សរុប</p>
+          <h3 id="metricTotalUnits" class="text-2xl font-bold text-emerald-600 mt-1">0</h3>
+          <p class="text-[11px] text-slate-400 mt-0.5">ចំនួនឯកតា/កេសក្នុងស្តុក</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-warehouse"></i>
+        </div>
+      </div>
+
+      <!-- Low Stock Warning -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ទំនិញជិតអស់ស្តុក</p>
+          <h3 id="metricLowStock" class="text-2xl font-bold text-rose-600 mt-1">0</h3>
+          <p class="text-[11px] text-rose-500 font-medium mt-0.5">&le; កម្រិតប្រកាសអាសន្ន</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+        </div>
+      </div>
+
+      <!-- Total Estimated Value -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm flex items-center justify-between">
+        <div>
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">តម្លៃសរុបក្នុងស្តុក</p>
+          <h3 id="metricStockValue" class="text-2xl font-bold text-slate-900 mt-1">$0.00</h3>
+          <p id="metricStockValueKhr" class="text-[11px] text-slate-500 mt-0.5">0 ៛</p>
+        </div>
+        <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
+          <i class="fa-solid fa-sack-dollar"></i>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 1: Items List -->
+    <div id="tabContentItems" class="tab-pane space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 no-print">
+        <div class="flex-1 flex flex-col sm:flex-row gap-2.5">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input type="text" id="itemSearchInput" oninput="filterItems()" placeholder="ស្វែងរកតាមឈ្មោះ ឬលេខកូដទំនិញ..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+          </div>
+
+          <div class="sm:w-52">
+            <select id="itemCategoryFilter" onchange="filterItems()" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white">
+              <option value="">គ្រប់ប្រភេទទាំងអស់ (All)</option>
+            </select>
+          </div>
+
+          <div class="sm:w-44">
+            <select id="itemStatusFilter" onchange="filterItems()" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition bg-white">
+              <option value="all">ស្ថានភាពទាំងអស់</option>
+              <option value="in_stock">នៅមានក្នុងស្តុក</option>
+              <option value="low_stock">ជិតអស់ស្តុក</option>
+              <option value="out_stock">អស់ពីស្តុក (0)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <button onclick="openItemModal()" class="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition">
+            <i class="fa-solid fa-plus mr-1.5"></i>
+            <span>បន្ថែមទំនិញថ្មី</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <tr>
+                <th class="py-3 px-4">ឈ្មោះទំនិញ / កូដ</th>
+                <th class="py-3 px-4">ប្រភេទ</th>
+                <th class="py-3 px-4 text-center">ចំនួននៅសល់</th>
+                <th class="py-3 px-4 text-right">តម្លៃដើម (Cost)</th>
+                <th class="py-3 px-4 text-right">តម្លៃលក់ (Sell)</th>
+                <th class="py-3 px-4 text-center">ស្ថានភាព</th>
+                <th class="py-3 px-4 text-center no-print">សកម្មភាព</th>
+              </tr>
+            </thead>
+            <tbody id="itemsTableBody" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="7" class="py-12 text-center text-slate-400">
+                  <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent mb-2"></div>
+                  <p>កំពុងផ្ទុកទិន្នន័យពីពពក...</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="noItemsFound" class="hidden py-12 text-center text-slate-500">
+          <i class="fa-solid fa-box-open text-4xl text-slate-300 mb-3"></i>
+          <p class="font-medium text-base">មិនមានទំនិញស្របតាមការស្វែងរកទេ</p>
+          <p class="text-xs text-slate-400 mt-1">សូមសាកល្បងស្វែងរកពាក្យផ្សេង ឬបន្ថែមទំនិញថ្មី។</p>
+        </div>
+
+        <!-- Pagination Bar -->
+        <div id="itemsPaginationBar" class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+          <div class="flex items-center space-x-2">
+            <span>បង្ហាញក្នុងមួយទំព័រ៖</span>
+            <select id="itemsPerPageSelect" onchange="changeItemsPerPage(this.value)" class="py-1 px-2.5 border border-slate-300 rounded-lg bg-white text-xs font-semibold focus:outline-none">
+              <option value="25">25 ទំនិញ</option>
+              <option value="50" selected>50 ទំនិញ</option>
+              <option value="100">100 ទំនិញ</option>
+            </select>
+            <span id="itemsPaginationSummary" class="text-slate-500 ml-2 font-medium"></span>
+          </div>
+
+          <div class="flex items-center space-x-1.5">
+            <button id="btnPrevItemPage" onclick="changeItemPage(-1)" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none font-medium transition">
+              <i class="fa-solid fa-chevron-left mr-1"></i> ថយ
+            </button>
+            <span id="itemPageIndicator" class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-700 font-bold rounded-lg">
+              ទំព័រ 1 / 1
+            </span>
+            <button id="btnNextItemPage" onclick="changeItemPage(1)" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none font-medium transition">
+              បន្ទាប់ <i class="fa-solid fa-chevron-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: History Log -->
+    <div id="tabContentHistory" class="tab-pane hidden space-y-4">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3 no-print">
+        <div class="flex-1 flex flex-col sm:flex-row gap-2.5">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </span>
+            <input type="text" id="historySearchInput" oninput="filterHistory()" placeholder="ស្វែងរកតាមឈ្មោះទំនិញ ឬសម្គាល់..." class="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+          </div>
+
+          <div class="sm:w-44">
+            <select id="historyTypeFilter" onchange="filterHistory()" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm focus:outline-none bg-white">
+              <option value="ALL">ប្រតិបត្តិការទាំងអស់</option>
+              <option value="IN">នាំចូលស្តុក (Stock In)</option>
+              <option value="OUT">នាំចេញស្តុក (Stock Out)</option>
+            </select>
+          </div>
+
+          <div class="sm:w-44">
+            <input type="date" id="historyDateFilter" onchange="filterHistory()" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm focus:outline-none bg-white">
+          </div>
+        </div>
+
+        <button onclick="window.print()" class="inline-flex items-center justify-center px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-semibold rounded-xl transition">
+          <i class="fa-solid fa-print mr-1.5"></i>
+          <span>បោះពុម្ពរបាយការណ៍</span>
+        </button>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto custom-scrollbar">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+              <tr>
+                <th class="py-3 px-4">កាលបរិច្ឆេទ & ម៉ោង</th>
+                <th class="py-3 px-4">ប្រភេទ</th>
+                <th class="py-3 px-4">ឈ្មោះទំនិញ</th>
+                <th class="py-3 px-4 text-center">ចំនួន</th>
+                <th class="py-3 px-4 text-right">តម្លៃរាយ</th>
+                <th class="py-3 px-4 text-right">សរុបទឹកប្រាក់</th>
+                <th class="py-3 px-4">ចំណាំ / សម្គាល់</th>
+              </tr>
+            </thead>
+            <tbody id="historyTableBody" class="divide-y divide-slate-100">
+              <tr>
+                <td colspan="7" class="py-12 text-center text-slate-400">មិនទាន់មានកំណត់ត្រាប្រតិបត្តិការទេ</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="historyPaginationBar" class="px-4 py-3 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+          <span id="historyPaginationSummary" class="text-slate-500 font-medium"></span>
+          <div class="flex items-center space-x-1.5">
+            <button id="btnPrevHistoryPage" onclick="changeHistoryPage(-1)" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none font-medium transition">
+              <i class="fa-solid fa-chevron-left mr-1"></i> ថយ
+            </button>
+            <span id="historyPageIndicator" class="px-3 py-1 bg-blue-50 border border-blue-200 text-blue-700 font-bold rounded-lg">
+              ទំព័រ 1 / 1
+            </span>
+            <button id="btnNextHistoryPage" onclick="changeHistoryPage(1)" class="px-3 py-1.5 rounded-lg border border-slate-300 bg-white hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none font-medium transition">
+              បន្ទាប់ <i class="fa-solid fa-chevron-right ml-1"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Categories -->
+    <div id="tabContentCategories" class="tab-pane hidden space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <h2 id="categoryFormTitle" class="font-bold text-base text-slate-800 mb-4 flex items-center space-x-2">
+            <i class="fa-solid fa-folder-plus text-blue-600"></i>
+            <span>បង្កើតប្រភេទមុខទំនិញថ្មី</span>
+          </h2>
+          <form id="categoryForm" onsubmit="handleSaveCategory(event)" class="space-y-4">
+            <input type="hidden" id="categoryIdInput" value="">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ឈ្មោះប្រភេទ *</label>
+              <input type="text" id="categoryNameInput" required placeholder="ឧទាហរណ៍៖ ភេសជ្ជៈ, គ្រឿងទេស..." class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ពណ៌សម្គាល់ (Badge Color)</label>
+              <div class="flex items-center space-x-2">
+                <input type="color" id="categoryColorInput" value="#2563eb" class="h-9 w-12 rounded-lg cursor-pointer border border-slate-200">
+                <span class="text-xs text-slate-500">ជ្រើសរើសពណ៌សម្រាប់ងាយចំណាំ</span>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ពិពណ៌នាបន្ថែម</label>
+              <textarea id="categoryDescInput" rows="2" placeholder="កំណត់ចំណាំអំពីប្រភេទនេះ..." class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"></textarea>
+            </div>
+            <div class="flex items-center space-x-2 pt-2">
+              <button type="submit" class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow transition">
+                រក្សាទុកប្រភេទ
+              </button>
+              <button type="button" onclick="resetCategoryForm()" class="py-2.5 px-3 bg-slate-100 hover:bg-slate-200 text-slate-600 text-sm font-medium rounded-xl transition">
+                សម្អាត
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="md:col-span-2 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <h2 class="font-bold text-base text-slate-800 mb-4 flex items-center justify-between">
+            <span class="flex items-center space-x-2">
+              <i class="fa-solid fa-tags text-indigo-600"></i>
+              <span>បញ្ជីប្រភេទមុខទំនិញដែលមាន</span>
+            </span>
+            <span id="categoryCountBadge" class="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-full">0 ប្រភេទ</span>
+          </h2>
+          <div class="overflow-x-auto custom-scrollbar">
+            <table class="w-full text-left border-collapse text-sm">
+              <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                <tr>
+                  <th class="py-2.5 px-3">ឈ្មោះប្រភេទ</th>
+                  <th class="py-2.5 px-3">ពិពណ៌នា</th>
+                  <th class="py-2.5 px-3 text-center">ចំនួនទំនិញ</th>
+                  <th class="py-2.5 px-3 text-right">សកម្មភាព</th>
+                </tr>
+              </thead>
+              <tbody id="categoryTableBody" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: Stock In / Stock Out -->
+  <div id="stockActionModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100">
+      <div id="stockModalHeader" class="px-6 py-4 bg-emerald-600 text-white flex justify-between items-center">
+        <h3 id="stockModalTitle" class="font-bold text-lg flex items-center space-x-2">
+          <i class="fa-solid fa-arrow-down"></i>
+          <span>នាំចូលស្តុកទំនិញ (Stock In)</span>
+        </h3>
+        <button onclick="closeStockModal()" class="text-white/80 hover:text-white text-xl">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="stockActionForm" onsubmit="handleStockActionSubmit(event)" class="p-6 space-y-4">
+        <input type="hidden" id="stockActionType" value="IN">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ជ្រើសរើសទំនិញ *</label>
+          <select id="stockItemSelect" required onchange="onStockItemSelectChanged()" class="w-full py-2.5 px-3 border border-slate-300 rounded-xl text-sm focus:outline-none bg-white">
+            <option value="">-- សូមជ្រើសរើសទំនិញ --</option>
+          </select>
+        </div>
+
+        <div id="stockCurrentInfoBox" class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between text-xs text-slate-600">
+          <span>ចំនួនសល់បច្ចុប្បន្ន៖ <strong id="stockCurrentQtyDisplay" class="text-slate-900 text-sm">0</strong></span>
+          <span>តម្លៃដើម៖ <strong id="stockCurrentCostDisplay" class="text-slate-900 text-sm">$0.00</strong></span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ចំនួន (Quantity) *</label>
+            <input type="number" id="stockQtyInput" min="1" required class="w-full py-2.5 px-3 border border-slate-300 rounded-xl text-sm font-semibold" placeholder="ឧ. 10">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">កាលបរិច្ឆេទ & ម៉ោង *</label>
+            <input type="datetime-local" id="stockDateInput" required class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label id="stockPriceLabel" class="block text-xs font-semibold text-slate-600 uppercase mb-1">តម្លៃក្នុងមួយឯកតា ($)</label>
+            <input type="number" step="0.01" id="stockUnitPriceInput" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm" placeholder="0.00">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ឯកតារាប់</label>
+            <input type="text" id="stockUnitDisplay" readonly class="w-full py-2 px-3 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-600" value="កេស">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ចំណាំ / ប្រភព / អតិថិជន</label>
+          <input type="text" id="stockNoteInput" placeholder="ឧទាហរណ៍៖ ទិញពីអ្នកផ្គត់ផ្គង់, វិក្កយបត្រ #..." class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm">
+        </div>
+
+        <div class="pt-3 flex space-x-3">
+          <button type="button" onclick="closeStockModal()" class="w-1/2 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition">
+            បោះបង់
+          </button>
+          <button type="submit" id="stockSubmitBtn" class="w-1/2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm shadow transition">
+            កត់ត្រាចូលស្តុក
+          </button>
+        </div>
       </form>
     </div>
   </div>
 
-  <!-- TAB 3: History Log -->
-  <div id="tab-history" class="tab-pane">
-    <div class="card">
-      <div class="card-title">🕒 កំណត់ត្រាប្រវត្តិ នាំចូល/នាំចេញ (History Log)</div>
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>កាលបរិច្ឆេទ & ម៉ោង</th>
-              <th>ឈ្មោះទំនិញ</th>
-              <th>ប្រភេទប្រតិបត្តិការ</th>
-              <th>ចំនួន</th>
-              <th>ចំណាំ</th>
-            </tr>
-          </thead>
-          <tbody id="historyBody"></tbody>
-        </table>
+  <!-- MODAL: Add / Edit Item -->
+  <div id="itemModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-100">
+      <div class="px-6 py-4 bg-blue-600 text-white flex justify-between items-center">
+        <h3 id="itemModalTitle" class="font-bold text-lg flex items-center space-x-2">
+          <i class="fa-solid fa-box-archive"></i>
+          <span>បន្ថែមទំនិញថ្មីទៅក្នុងស្តុក</span>
+        </h3>
+        <button onclick="closeItemModal()" class="text-white/80 hover:text-white text-xl">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
+
+      <form id="itemForm" onsubmit="handleSaveItem(event)" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto custom-scrollbar">
+        <input type="hidden" id="itemIdInput" value="">
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ឈ្មោះទំនិញ *</label>
+          <input type="text" id="itemNameInput" required placeholder="ឧទាហរណ៍៖ កាហ្វេ, ទឹកសុទ្ធ..." class="w-full py-2.5 px-3 border border-slate-300 rounded-xl text-sm">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">លេខកូដទំនិញ / SKU</label>
+            <input type="text" id="itemSkuInput" placeholder="PRD-001" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ប្រភេទ (Category) *</label>
+            <select id="itemCategorySelect" required class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm bg-white"></select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ចំនួនក្នុងស្តុកដំបូង</label>
+            <input type="number" id="itemInitialQtyInput" min="0" value="0" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm font-semibold">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">ឯកតារាប់ (Unit)</label>
+            <input type="text" id="itemUnitNameInput" placeholder="កំប៉ុង, កេស, ដប..." value="កេស" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">តម្លៃដើមទិញចូល ($) Cost</label>
+            <input type="number" step="0.01" id="itemCostPriceInput" value="0.00" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">តម្លៃលក់ចេញ ($) Sell</label>
+            <input type="number" step="0.01" id="itemSalePriceInput" value="0.00" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 uppercase mb-1">កម្រិតប្រកាសអាសន្នជិតអស់ស្តុក (&le;)</label>
+          <input type="number" id="itemMinThresholdInput" value="5" min="1" class="w-full py-2 px-3 border border-slate-300 rounded-xl text-sm">
+        </div>
+
+        <div class="pt-3 flex space-x-3">
+          <button type="button" onclick="closeItemModal()" class="w-1/2 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl text-sm transition">
+            បោះបង់
+          </button>
+          <button type="submit" class="w-1/2 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm shadow transition">
+            រក្សាទុកទំនិញ
+          </button>
+        </div>
+      </form>
     </div>
   </div>
-</div>
 
-<script>
-  // 1. Firebase Initialization with your exact keys
-  const firebaseConfig = {
-    apiKey: "AIzaSyDRfWtHN35bfbk9VnM4j-AdwNLEtiBZMII",
-    authDomain: "vm-stock-5595f.firebaseapp.com",
-    databaseURL: "https://vm-stock-5595f-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "vm-stock-5595f",
-    storageBucket: "vm-stock-5595f.firebasestorage.app",
-    messagingSenderId: "712570267647",
-    appId: "1:712570267647:web:21c10a4cac6ec7648ea9ca",
-    measurementId: "G-C0PFEW5T60"
-  };
+  <!-- Toast Notification -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const EXCHANGE_RATE = 4100; // USD to KHR
-  let items = [];
-  let history = [];
-
-  let currentPage = 1;
-  const pageSize = 15;
-
-  // Real-time Cloud Listeners
-  db.ref('items').on('value', (snapshot) => {
-    const val = snapshot.val();
-    items = val ? Object.keys(val).map(key => ({ id: key, ...val[key] })) : [];
-    updateDashboard();
-  }, (error) => {
-    document.getElementById('sync-status').textContent = 'ភ្ជាប់ Cloud មិនជោគជ័យ';
-  });
-
-  db.ref('history').limitToLast(50).on('value', (snapshot) => {
-    const val = snapshot.val();
-    history = val ? Object.keys(val).map(key => ({ id: key, ...val[key] })).reverse() : [];
-    renderHistory();
-  });
-
-  // UI Tabs
-  function switchTab(tabId) {
-    document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-    document.getElementById(tabId).classList.add('active');
-    event.target.classList.add('active');
-  }
-
-  // Add Item
-  document.getElementById('addItemForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const newItem = {
-      name: document.getElementById('itemName').value.trim(),
-      category: document.getElementById('itemCategory').value.trim(),
-      qty: parseInt(document.getElementById('itemQty').value, 10),
-      cost: parseFloat(document.getElementById('itemCost').value),
-      price: parseFloat(document.getElementById('itemPrice').value),
-      updatedAt: Date.now()
+  <script>
+    // 1. Firebase Initialization with your exact keys
+    const firebaseConfig = {
+      apiKey: "AIzaSyDRfWtHN35bfbk9VnM4j-AdwNLEtiBZMII",
+      authDomain: "vm-stock-5595f.firebaseapp.com",
+      databaseURL: "https://vm-stock-5595f-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "vm-stock-5595f",
+      storageBucket: "vm-stock-5595f.firebasestorage.app",
+      messagingSenderId: "712570267647",
+      appId: "1:712570267647:web:21c10a4cac6ec7648ea9ca",
+      measurementId: "G-C0PFEW5T60"
     };
-    db.ref('items').push(newItem);
-    e.target.reset();
-  });
 
-  // Handle Stock In/Out
-  document.getElementById('stockActionForm').addEventListener('submit', (e) => {
-    e.preventDefault();
-    const itemId = document.getElementById('actionItemSelect').value;
-    const type = document.getElementById('actionType').value;
-    const qty = parseInt(document.getElementById('actionQty').value, 10);
-    const note = document.getElementById('actionNote').value.trim() || '-';
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    const target = items.find(i => i.id === itemId);
-    if (!target) return;
+    // App State
+    window.appState = {
+      items: [],
+      categories: [],
+      history: [],
+      usdToKhrRate: 4100,
+      itemsPage: 1,
+      itemsPerPage: 50,
+      historyPage: 1,
+      historyPerPage: 30
+    };
 
-    if (type === 'OUT' && target.qty < qty) {
-      alert('ចំនួនក្នុងស្តុកមិនគ្រប់គ្រាន់ទេ!');
-      return;
-    }
+    // Toast Function
+    window.showToast = function(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      const bgColors = {
+        success: 'bg-emerald-600 text-white',
+        error: 'bg-rose-600 text-white',
+        info: 'bg-slate-800 text-white',
+        warning: 'bg-amber-600 text-white'
+      };
+      const icons = {
+        success: 'fa-circle-check',
+        error: 'fa-circle-xmark',
+        info: 'fa-circle-info',
+        warning: 'fa-triangle-exclamation'
+      };
+      toast.className = `pointer-events-auto px-4 py-3 rounded-2xl shadow-xl flex items-center space-x-3 text-xs font-medium transform transition-all duration-300 ease-out translate-y-2 opacity-0 ${bgColors[type] || bgColors.info}`;
+      toast.innerHTML = `<i class="fa-solid ${icons[type] || icons.info} text-sm"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      requestAnimationFrame(() => toast.classList.remove('translate-y-2', 'opacity-0'));
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    };
 
-    const newQty = type === 'IN' ? target.qty + qty : target.qty - qty;
-    
-    // Cloud Updates
-    db.ref('items/' + itemId).update({ qty: newQty });
-    db.ref('history').push({
-      itemName: target.name,
-      type: type,
-      qty: qty,
-      note: note,
-      date: new Date().toLocaleString('km-KH')
+    // Realtime Firebase Listeners
+    db.ref('categories').on('value', (snapshot) => {
+      const val = snapshot.val();
+      if (!val) {
+        // Seed default categories if none exist
+        const defaults = {
+          cat_1: { name: 'ភេសជ្ជៈ (Beverages)', color: '#2563eb', desc: 'ទឹកក្រូច ទឹកសុទ្ធ កាហ្វេ' },
+          cat_2: { name: 'គ្រឿងទេស (Groceries)', color: '#059669', desc: 'មី អង្ករ គ្រឿងចម្អិន' },
+          cat_3: { name: 'សម្ភារៈប្រើប្រាស់ (Household)', color: '#d97706', desc: 'សាប៊ូ ក្រដាសអនាម័យ' }
+        };
+        db.ref('categories').set(defaults);
+      } else {
+        window.appState.categories = Object.keys(val).map(k => ({ id: k, ...val[k] }));
+        renderCategories();
+        populateCategorySelects();
+        renderItems();
+      }
     });
 
-    e.target.reset();
-    switchTab('tab-items');
-  });
-
-  // Delete Item
-  window.deleteItem = (id) => {
-    if (confirm('តើអ្នកពិតជាចង់លុបទំនិញនេះមែនទេ?')) {
-      db.ref('items/' + id).remove();
-    }
-  };
-
-  // Rendering & Search Filtering
-  function updateDashboard() {
-    renderInventory();
-    populateSelects();
-    updateKPICards();
-  }
-
-  function renderInventory() {
-    const search = document.getElementById('searchBar').value.toLowerCase();
-    const category = document.getElementById('categoryFilter').value;
-
-    const filtered = items.filter(i => {
-      const matchSearch = i.name.toLowerCase().includes(search) || i.category.toLowerCase().includes(search);
-      const matchCategory = !category || i.category === category;
-      return matchSearch && matchCategory;
+    db.ref('items').on('value', (snapshot) => {
+      const val = snapshot.val();
+      window.appState.items = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+      renderItems();
+      updateKPICards();
+      populateItemSelectForStock();
     });
 
-    const totalPages = Math.ceil(filtered.length / pageSize) || 1;
-    if (currentPage > totalPages) currentPage = totalPages;
+    db.ref('history').limitToLast(100).on('value', (snapshot) => {
+      const val = snapshot.val();
+      const list = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+      list.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+      window.appState.history = list;
+      renderHistory();
+    });
 
-    const start = (currentPage - 1) * pageSize;
-    const pageItems = filtered.slice(start, start + pageSize);
+    // Render Items Table with high-volume pagination
+    window.renderItems = function() {
+      const tbody = document.getElementById('itemsTableBody');
+      const emptyBox = document.getElementById('noItemsFound');
+      const paginationBar = document.getElementById('itemsPaginationBar');
+      const query = (document.getElementById('itemSearchInput')?.value || '').trim().toLowerCase();
+      const catFilter = document.getElementById('itemCategoryFilter')?.value || '';
+      const statusFilter = document.getElementById('itemStatusFilter')?.value || 'all';
 
-    const tbody = document.getElementById('inventoryBody');
-    tbody.innerHTML = '';
-
-    if (pageItems.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#94a3b8;">គ្មានទិន្នន័យទំនិញឡើយ</td></tr>';
-    } else {
-      pageItems.forEach(i => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td><strong>${i.name}</strong></td>
-          <td><span class="badge" style="background:#f1f5f9; color:#475569;">${i.category}</span></td>
-          <td>
-            <span class="badge ${i.qty <= 5 ? 'badge-low' : ''}" style="${i.qty <= 5 ? '' : 'font-weight:700;'}">
-              ${i.qty.toLocaleString()}
-            </span>
-          </td>
-          <td>$${i.cost.toFixed(2)}</td>
-          <td>$${i.price.toFixed(2)}</td>
-          <td>${Math.round(i.price * EXCHANGE_RATE).toLocaleString()} ៛</td>
-          <td>
-            <button class="btn btn-danger btn-sm" onclick="deleteItem('${i.id}')">លុប</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
+      let filtered = window.appState.items.filter(item => {
+        const nameMatch = !query || (item.name || '').toLowerCase().includes(query) || (item.sku || '').toLowerCase().includes(query);
+        const catMatch = !catFilter || item.categoryId === catFilter;
+        let statusMatch = true;
+        const qty = Number(item.quantity || 0);
+        const threshold = Number(item.minThreshold || 5);
+        if (statusFilter === 'in_stock') statusMatch = qty > threshold;
+        if (statusFilter === 'low_stock') statusMatch = qty > 0 && qty <= threshold;
+        if (statusFilter === 'out_stock') statusMatch = qty <= 0;
+        return nameMatch && catMatch && statusMatch;
       });
+
+      const totalItems = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / window.appState.itemsPerPage));
+      if (window.appState.itemsPage > totalPages) window.appState.itemsPage = totalPages;
+      if (window.appState.itemsPage < 1) window.appState.itemsPage = 1;
+
+      if (totalItems === 0) {
+        tbody.innerHTML = '';
+        emptyBox.classList.remove('hidden');
+        if (paginationBar) paginationBar.classList.add('hidden');
+        return;
+      }
+
+      emptyBox.classList.add('hidden');
+      if (paginationBar) paginationBar.classList.remove('hidden');
+
+      const startIndex = (window.appState.itemsPage - 1) * window.appState.itemsPerPage;
+      const endIndex = Math.min(startIndex + window.appState.itemsPerPage, totalItems);
+      const pageSlice = filtered.slice(startIndex, endIndex);
+
+      document.getElementById('itemsPaginationSummary').innerText = `បង្ហាញពី ${startIndex + 1} ដល់ ${endIndex} នៃ ${totalItems.toLocaleString()} មុខទំនិញ`;
+      document.getElementById('itemPageIndicator').innerText = `ទំព័រ ${window.appState.itemsPage} / ${totalPages}`;
+      document.getElementById('btnPrevItemPage').disabled = window.appState.itemsPage <= 1;
+      document.getElementById('btnNextItemPage').disabled = window.appState.itemsPage >= totalPages;
+
+      tbody.innerHTML = pageSlice.map(item => {
+        const cat = window.appState.categories.find(c => c.id === item.categoryId);
+        const qty = Number(item.quantity || 0);
+        const threshold = Number(item.minThreshold || 5);
+
+        let badgeClass = 'bg-emerald-100 text-emerald-800';
+        let statusLabel = 'មានក្នុងស្តុក';
+        if (qty <= 0) {
+          badgeClass = 'bg-rose-100 text-rose-800';
+          statusLabel = 'អស់ពីស្តុក';
+        } else if (qty <= threshold) {
+          badgeClass = 'bg-amber-100 text-amber-800 font-bold';
+          statusLabel = 'ជិតអស់ស្តុក';
+        }
+
+        const cost = Number(item.costPrice || 0);
+        const sale = Number(item.salePrice || 0);
+        const costKhr = Math.round(cost * window.appState.usdToKhrRate).toLocaleString();
+        const saleKhr = Math.round(sale * window.appState.usdToKhrRate).toLocaleString();
+
+        return `
+          <tr class="hover:bg-slate-50/80 transition">
+            <td class="py-3.5 px-4">
+              <div class="font-semibold text-slate-900">${escapeHtml(item.name)}</div>
+              <div class="text-xs text-slate-400 font-mono mt-0.5">${item.sku ? escapeHtml(item.sku) : 'គ្មានកូដ'}</div>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background-color: ${cat ? cat.color + '20' : '#f1f5f9'}; color: ${cat ? cat.color : '#475569'}">
+                ${cat ? escapeHtml(cat.name) : 'ទូទៅ'}
+              </span>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <span class="text-base font-bold ${qty <= threshold ? 'text-rose-600' : 'text-slate-800'}">${qty.toLocaleString()}</span>
+              <span class="text-xs text-slate-500 ml-1 font-normal">${escapeHtml(item.unit || 'ឯកតា')}</span>
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <div class="font-semibold text-slate-800">$${cost.toFixed(2)}</div>
+              <div class="text-[11px] text-slate-400">${costKhr} ៛</div>
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <div class="font-semibold text-emerald-700">$${sale.toFixed(2)}</div>
+              <div class="text-[11px] text-slate-400">${saleKhr} ៛</div>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <span class="inline-block px-2.5 py-1 text-xs rounded-full font-medium ${badgeClass}">${statusLabel}</span>
+            </td>
+            <td class="py-3.5 px-4 text-center no-print">
+              <div class="flex items-center justify-center space-x-1.5">
+                <button onclick="quickStockAction('${item.id}', 'IN')" title="នាំចូលបន្ថែម" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"><i class="fa-solid fa-circle-plus"></i></button>
+                <button onclick="quickStockAction('${item.id}', 'OUT')" title="នាំចេញ" class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition"><i class="fa-solid fa-circle-minus"></i></button>
+                <button onclick="editItem('${item.id}')" title="កែប្រែ" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"><i class="fa-solid fa-pen-to-square"></i></button>
+                <button onclick="deleteItem('${item.id}')" title="លុប" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    let searchTimer = null;
+    window.filterItems = function() {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => { window.appState.itemsPage = 1; renderItems(); }, 150);
+    };
+
+    window.changeItemPage = function(delta) { window.appState.itemsPage += delta; renderItems(); };
+    window.changeItemsPerPage = function(val) {
+      window.appState.itemsPerPage = parseInt(val, 10) || 50;
+      window.appState.itemsPage = 1;
+      renderItems();
+    };
+
+    function updateKPICards() {
+      const items = window.appState.items;
+      let totalUnits = 0, lowStockCount = 0, totalStockValue = 0;
+      items.forEach(item => {
+        const qty = Number(item.quantity || 0);
+        const cost = Number(item.costPrice || 0);
+        const threshold = Number(item.minThreshold || 5);
+        totalUnits += qty;
+        totalStockValue += (qty * cost);
+        if (qty <= threshold) lowStockCount++;
+      });
+      document.getElementById('metricTotalTypes').innerText = items.length.toLocaleString();
+      document.getElementById('metricTotalUnits').innerText = totalUnits.toLocaleString();
+      document.getElementById('metricLowStock').innerText = lowStockCount.toLocaleString();
+      document.getElementById('metricStockValue').innerText = `$${totalStockValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('metricStockValueKhr').innerText = `${Math.round(totalStockValue * window.appState.usdToKhrRate).toLocaleString()} ៛`;
     }
 
-    document.getElementById('pageInfo').textContent = `ទំព័រ ${currentPage} នៃ ${totalPages} (${filtered.length} មុខ)`;
-  }
+    function populateCategorySelects() {
+      const filterSelect = document.getElementById('itemCategoryFilter');
+      const itemModalSelect = document.getElementById('itemCategorySelect');
+      const cats = window.appState.categories;
+      const curFilterVal = filterSelect.value;
 
-  function renderHistory() {
-    const tbody = document.getElementById('historyBody');
-    tbody.innerHTML = '';
-    if (history.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; color:#94a3b8;">មិនទាន់មានប្រវត្តិប្រតិបត្តិការឡើយ</td></tr>';
-      return;
+      filterSelect.innerHTML = `<option value="">គ្រប់ប្រភេទទាំងអស់ (All)</option>` + cats.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
+      filterSelect.value = curFilterVal;
+
+      itemModalSelect.innerHTML = `<option value="">-- ជ្រើសរើសប្រភេទ --</option>` + cats.map(c => `<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');
     }
-    history.forEach(h => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${h.date}</td>
-        <td><strong>${h.itemName}</strong></td>
-        <td><span class="badge ${h.type === 'IN' ? 'badge-in' : 'badge-out'}">${h.type === 'IN' ? '📥 នាំចូល' : '📤 នាំចេញ'}</span></td>
-        <td>${h.qty.toLocaleString()}</td>
-        <td>${h.note}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
 
-  function populateSelects() {
-    const actionSelect = document.getElementById('actionItemSelect');
-    const catFilter = document.getElementById('categoryFilter');
-    const currentCat = catFilter.value;
+    function renderCategories() {
+      const tbody = document.getElementById('categoryTableBody');
+      const cats = window.appState.categories;
+      document.getElementById('categoryCountBadge').innerText = `${cats.length} ប្រភេទ`;
 
-    actionSelect.innerHTML = '<option value="">-- ជ្រើសរើសទំនិញ --</option>';
-    catFilter.innerHTML = '<option value="">-- ប្រភេទទាំងអស់ --</option>';
+      if (cats.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="py-6 text-center text-slate-400">មិនទាន់មានប្រភេទនៅឡើយទេ</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = cats.map(cat => {
+        const count = window.appState.items.filter(i => i.categoryId === cat.id).length;
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-3">
+              <div class="flex items-center space-x-2">
+                <span class="w-3.5 h-3.5 rounded-full shadow-sm" style="background-color: ${cat.color || '#3b82f6'}"></span>
+                <span class="font-semibold text-slate-800">${escapeHtml(cat.name)}</span>
+              </div>
+            </td>
+            <td class="py-3 px-3 text-slate-500 text-xs">${escapeHtml(cat.desc || '-')}</td>
+            <td class="py-3 px-3 text-center"><span class="px-2.5 py-1 bg-slate-100 rounded-full text-xs font-semibold">${count} ទំនិញ</span></td>
+            <td class="py-3 px-3 text-right">
+              <button onclick="editCategory('${cat.id}')" class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition mr-1"><i class="fa-solid fa-pen-to-square"></i></button>
+              <button onclick="deleteCategory('${cat.id}')" class="p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition"><i class="fa-solid fa-trash"></i></button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
 
-    const categories = new Set();
+    function populateItemSelectForStock() {
+      const select = document.getElementById('stockItemSelect');
+      const cur = select.value;
+      select.innerHTML = '<option value="">-- សូមជ្រើសរើសទំនិញ --</option>' + 
+        window.appState.items.map(item => `<option value="${item.id}">${escapeHtml(item.name)} (${item.quantity} ${item.unit || 'ឯកតា'})</option>`).join('');
+      select.value = cur;
+    }
 
-    items.forEach(i => {
-      categories.add(i.category);
-      const opt = document.createElement('option');
-      opt.value = i.id;
-      opt.textContent = `${i.name} (នៅសល់: ${i.qty})`;
-      actionSelect.appendChild(opt);
-    });
+    window.renderHistory = function() {
+      const tbody = document.getElementById('historyTableBody');
+      const search = (document.getElementById('historySearchInput')?.value || '').trim().toLowerCase();
+      const typeFilter = document.getElementById('historyTypeFilter')?.value || 'ALL';
+      const dateFilter = document.getElementById('historyDateFilter')?.value || '';
 
-    categories.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c;
-      opt.textContent = c;
-      if (c === currentCat) opt.selected = true;
-      catFilter.appendChild(opt);
-    });
-  }
+      const filtered = window.appState.history.filter(h => {
+        const item = window.appState.items.find(i => i.id === h.itemId);
+        const itemName = item ? item.name : (h.itemName || '');
+        const note = h.note || '';
+        const matchSearch = !search || itemName.toLowerCase().includes(search) || note.toLowerCase().includes(search);
+        const matchType = typeFilter === 'ALL' || h.type === typeFilter;
+        let matchDate = true;
+        if (dateFilter && h.timestamp) {
+          const transDate = new Date(h.timestamp).toISOString().split('T')[0];
+          matchDate = transDate === dateFilter;
+        }
+        return matchSearch && matchType && matchDate;
+      });
 
-  function updateKPICards() {
-    const totalItems = items.length;
-    const lowStock = items.filter(i => i.qty <= 5).length;
-    const totalValUSD = items.reduce((acc, i) => acc + (i.qty * i.cost), 0);
+      const totalHistory = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalHistory / window.appState.historyPerPage));
+      if (window.appState.historyPage > totalPages) window.appState.historyPage = totalPages;
+      if (window.appState.historyPage < 1) window.appState.historyPage = 1;
 
-    document.getElementById('totalItemsCount').textContent = totalItems.toLocaleString();
-    document.getElementById('lowStockCount').textContent = lowStock.toLocaleString();
-    document.getElementById('totalStockValueUSD').textContent = '$' + totalValUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    document.getElementById('totalStockValueKHR').textContent = Math.round(totalValUSD * EXCHANGE_RATE).toLocaleString() + ' ៛';
-  }
+      if (totalHistory === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="py-10 text-center text-slate-400">មិនមានប្រវត្តិប្រតិបត្តិការតាមលក្ខខណ្ឌស្វែងរកឡើយ</td></tr>`;
+        document.getElementById('historyPaginationSummary').innerText = 'មិនមានកំណត់ត្រា';
+        return;
+      }
 
-  function prevPage() { if (currentPage > 1) { currentPage--; renderInventory(); } }
-  function nextPage() { currentPage++; renderInventory(); }
+      const startIndex = (window.appState.historyPage - 1) * window.appState.historyPerPage;
+      const endIndex = Math.min(startIndex + window.appState.historyPerPage, totalHistory);
+      const pageSlice = filtered.slice(startIndex, endIndex);
 
-  document.getElementById('searchBar').addEventListener('input', () => { currentPage = 1; renderInventory(); });
-  document.getElementById('categoryFilter').addEventListener('change', () => { currentPage = 1; renderInventory(); });
-</script>
+      document.getElementById('historyPaginationSummary').innerText = `បង្ហាញពី ${startIndex + 1} ដល់ ${endIndex} នៃ ${totalHistory.toLocaleString()} ប្រតិបត្តិការ`;
+      document.getElementById('historyPageIndicator').innerText = `ទំព័រ ${window.appState.historyPage} / ${totalPages}`;
+      document.getElementById('btnPrevHistoryPage').disabled = window.appState.historyPage <= 1;
+      document.getElementById('btnNextHistoryPage').disabled = window.appState.historyPage >= totalPages;
+
+      tbody.innerHTML = pageSlice.map(h => {
+        const isIn = h.type === 'IN';
+        const dateObj = h.timestamp ? new Date(h.timestamp) : new Date();
+        const dateStr = dateObj.toLocaleDateString('km-KH', { year: 'numeric', month: 'short', day: 'numeric' });
+        const timeStr = dateObj.toLocaleTimeString('km-KH', { hour: '2-digit', minute: '2-digit' });
+        const unitPrice = Number(h.unitPrice || 0);
+        const qty = Number(h.quantity || 0);
+        const totalAmount = unitPrice * qty;
+
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-4">
+              <div class="font-medium text-slate-800">${dateStr}</div>
+              <div class="text-xs text-slate-400">${timeStr}</div>
+            </td>
+            <td class="py-3 px-4">
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold ${isIn ? 'badge-in' : 'badge-out'}">
+                <i class="fa-solid ${isIn ? 'fa-arrow-down mr-1' : 'fa-arrow-up mr-1'}"></i>
+                ${isIn ? 'នាំចូល (In)' : 'នាំចេញ (Out)'}
+              </span>
+            </td>
+            <td class="py-3 px-4 font-semibold text-slate-900">${escapeHtml(h.itemName || 'ទំនិញ')}</td>
+            <td class="py-3 px-4 text-center font-bold ${isIn ? 'text-emerald-700' : 'text-amber-700'}">
+              ${isIn ? '+' : '-'}${qty.toLocaleString()} <span class="text-xs text-slate-400 font-normal">${escapeHtml(h.unit || '')}</span>
+            </td>
+            <td class="py-3 px-4 text-right text-slate-700 font-medium">$${unitPrice.toFixed(2)}</td>
+            <td class="py-3 px-4 text-right font-bold text-slate-900">$${totalAmount.toFixed(2)}</td>
+            <td class="py-3 px-4 text-slate-500 text-xs">${escapeHtml(h.note || '-')}</td>
+          </tr>
+        `;
+      }).join('');
+    };
+
+    window.filterHistory = function() { window.appState.historyPage = 1; renderHistory(); };
+    window.changeHistoryPage = function(delta) { window.appState.historyPage += delta; renderHistory(); };
+
+    // Modals
+    window.openStockModal = function(type, defaultItemId = '') {
+      document.getElementById('stockActionType').value = type;
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('stockDateInput').value = now.toISOString().slice(0, 16);
+
+      const header = document.getElementById('stockModalHeader');
+      const title = document.getElementById('stockModalTitle');
+      const btn = document.getElementById('stockSubmitBtn');
+      const priceLabel = document.getElementById('stockPriceLabel');
+
+      if (type === 'IN') {
+        header.className = 'px-6 py-4 bg-emerald-600 text-white flex justify-between items-center';
+        title.innerHTML = '<i class="fa-solid fa-arrow-down mr-2"></i><span>នាំចូលស្តុកទំនិញ (Stock In)</span>';
+        btn.className = 'w-1/2 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl text-sm shadow transition';
+        btn.innerText = 'កត់ត្រាចូលស្តុក';
+        priceLabel.innerText = 'តម្លៃដើមទិញចូលក្នុងមួយឯកតា ($) Cost';
+      } else {
+        header.className = 'px-6 py-4 bg-amber-600 text-white flex justify-between items-center';
+        title.innerHTML = '<i class="fa-solid fa-arrow-up mr-2"></i><span>នាំចេញស្តុកទំនិញ (Stock Out)</span>';
+        btn.className = 'w-1/2 py-2.5 px-4 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-sm shadow transition';
+        btn.innerText = 'កត់ត្រាចេញស្តុក';
+        priceLabel.innerText = 'តម្លៃលក់ចេញក្នុងមួយឯកតា ($) Sell';
+      }
+
+      if (defaultItemId) document.getElementById('stockItemSelect').value = defaultItemId;
+      onStockItemSelectChanged();
+      document.getElementById('stockQtyInput').value = '';
+      document.getElementById('stockNoteInput').value = '';
+      document.getElementById('stockActionModal').classList.remove('hidden');
+    };
+
+    window.closeStockModal = function() { document.getElementById('stockActionModal').classList.add('hidden'); };
+    window.quickStockAction = function(itemId, type) { openStockModal(type, itemId); };
+
+    window.onStockItemSelectChanged = function() {
+      const itemId = document.getElementById('stockItemSelect').value;
+      const type = document.getElementById('stockActionType').value;
+      const item = window.appState.items.find(i => i.id === itemId);
+      if (item) {
+        document.getElementById('stockCurrentQtyDisplay').innerText = `${item.quantity || 0} ${item.unit || 'ឯកតា'}`;
+        document.getElementById('stockCurrentCostDisplay').innerText = `$${Number(item.costPrice || 0).toFixed(2)}`;
+        document.getElementById('stockUnitDisplay').value = item.unit || 'ឯកតា';
+        document.getElementById('stockUnitPriceInput').value = (type === 'IN') ? (item.costPrice || 0) : (item.salePrice || 0);
+      } else {
+        document.getElementById('stockCurrentQtyDisplay').innerText = '0';
+        document.getElementById('stockCurrentCostDisplay').innerText = '$0.00';
+        document.getElementById('stockUnitPriceInput').value = '0.00';
+      }
+    };
+
+    window.handleStockActionSubmit = async function(e) {
+      e.preventDefault();
+      const itemId = document.getElementById('stockItemSelect').value;
+      const type = document.getElementById('stockActionType').value;
+      const qty = parseInt(document.getElementById('stockQtyInput').value, 10);
+      const unitPrice = parseFloat(document.getElementById('stockUnitPriceInput').value) || 0;
+      const dateVal = document.getElementById('stockDateInput').value;
+      const note = document.getElementById('stockNoteInput').value.trim() || '-';
+
+      const item = window.appState.items.find(i => i.id === itemId);
+      if (!item) return;
+
+      const currentQty = Number(item.quantity || 0);
+      if (type === 'OUT' && currentQty < qty) {
+        showToast(`ស្តុកមិនគ្រប់គ្រាន់ទេ! សល់ត្រឹមតែ ${currentQty} ${item.unit}`, 'error');
+        return;
+      }
+
+      const newQty = type === 'IN' ? (currentQty + qty) : (currentQty - qty);
+
+      const transData = {
+        itemId,
+        itemName: item.name,
+        type,
+        quantity: qty,
+        unit: item.unit || 'ឯកតា',
+        unitPrice,
+        timestamp: dateVal ? new Date(dateVal).toISOString() : new Date().toISOString(),
+        note
+      };
+
+      try {
+        await db.ref('items/' + itemId).update({
+          quantity: newQty,
+          ...(type === 'IN' && unitPrice > 0 ? { costPrice: unitPrice } : {})
+        });
+        await db.ref('history').push(transData);
+
+        closeStockModal();
+        showToast(type === 'IN' ? `បាននាំចូលស្តុក +${qty} ដោយជោគជ័យ!` : `បាននាំចេញស្តុក -${qty} ដោយជោគជ័យ!`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('មានបញ្ហាក្នុងការកត់ត្រា', 'error');
+      }
+    };
+
+    // Item Add/Edit
+    window.openItemModal = function(item = null) {
+      const modal = document.getElementById('itemModal');
+      const title = document.getElementById('itemModalTitle');
+      if (item) {
+        title.innerHTML = '<i class="fa-solid fa-pen-to-square mr-2"></i><span>កែប្រែទិន្នន័យទំនិញ</span>';
+        document.getElementById('itemIdInput').value = item.id;
+        document.getElementById('itemNameInput').value = item.name || '';
+        document.getElementById('itemSkuInput').value = item.sku || '';
+        document.getElementById('itemCategorySelect').value = item.categoryId || '';
+        document.getElementById('itemInitialQtyInput').value = item.quantity || 0;
+        document.getElementById('itemUnitNameInput').value = item.unit || 'កេស';
+        document.getElementById('itemCostPriceInput').value = item.costPrice || 0;
+        document.getElementById('itemSalePriceInput').value = item.salePrice || 0;
+        document.getElementById('itemMinThresholdInput').value = item.minThreshold || 5;
+      } else {
+        title.innerHTML = '<i class="fa-solid fa-box-archive mr-2"></i><span>បន្ថែមទំនិញថ្មីទៅក្នុងស្តុក</span>';
+        document.getElementById('itemForm').reset();
+        document.getElementById('itemIdInput').value = '';
+        document.getElementById('itemInitialQtyInput').value = '0';
+        document.getElementById('itemCostPriceInput').value = '0.00';
+        document.getElementById('itemSalePriceInput').value = '0.00';
+        document.getElementById('itemMinThresholdInput').value = '5';
+        document.getElementById('itemUnitNameInput').value = 'កេស';
+      }
+      modal.classList.remove('hidden');
+    };
+
+    window.closeItemModal = function() { document.getElementById('itemModal').classList.add('hidden'); };
+    window.editItem = function(id) {
+      const item = window.appState.items.find(i => i.id === id);
+      if (item) openItemModal(item);
+    };
+
+    window.deleteItem = function(id) {
+      const item = window.appState.items.find(i => i.id === id);
+      if (!item) return;
+      if (confirm(`តើអ្នកប្រាកដថាចង់លុបទំនិញ "${item.name}" មែនទេ?`)) {
+        db.ref('items/' + id).remove();
+        showToast('បានលុបទំនិញជោគជ័យ', 'success');
+      }
+    };
+
+    window.handleSaveItem = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById('itemIdInput').value;
+      const payload = {
+        name: document.getElementById('itemNameInput').value.trim(),
+        sku: document.getElementById('itemSkuInput').value.trim(),
+        categoryId: document.getElementById('itemCategorySelect').value,
+        quantity: parseInt(document.getElementById('itemInitialQtyInput').value, 10) || 0,
+        unit: document.getElementById('itemUnitNameInput').value.trim() || 'ឯកតា',
+        costPrice: parseFloat(document.getElementById('itemCostPriceInput').value) || 0,
+        salePrice: parseFloat(document.getElementById('itemSalePriceInput').value) || 0,
+        minThreshold: parseInt(document.getElementById('itemMinThresholdInput').value, 10) || 5,
+        updatedAt: Date.now()
+      };
+
+      try {
+        if (id) {
+          await db.ref('items/' + id).update(payload);
+        } else {
+          await db.ref('items').push(payload);
+        }
+        closeItemModal();
+        showToast(id ? 'បានកែប្រែទំនិញរួចរាល់' : 'បានបន្ថែមទំនិញថ្មីជោគជ័យ', 'success');
+      } catch (err) {
+        showToast('មានបញ្ហាក្នុងការរក្សាទុក', 'error');
+      }
+    };
+
+    // Category CRUD
+    window.handleSaveCategory = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById('categoryIdInput').value;
+      const payload = {
+        name: document.getElementById('categoryNameInput').value.trim(),
+        color: document.getElementById('categoryColorInput').value,
+        desc: document.getElementById('categoryDescInput').value.trim()
+      };
+      try {
+        if (id) {
+          await db.ref('categories/' + id).update(payload);
+        } else {
+          await db.ref('categories').push(payload);
+        }
+        resetCategoryForm();
+        showToast('បានរក្សាទុកប្រភេទមុខទំនិញជោគជ័យ', 'success');
+      } catch (err) {
+        showToast('បរាជ័យក្នុងការរក្សាទុកប្រភេទ', 'error');
+      }
+    };
+
+    window.editCategory = function(id) {
+      const cat = window.appState.categories.find(c => c.id === id);
+      if (!cat) return;
+      document.getElementById('categoryIdInput').value = cat.id;
+      document.getElementById('categoryNameInput').value = cat.name || '';
+      document.getElementById('categoryColorInput').value = cat.color || '#2563eb';
+      document.getElementById('categoryDescInput').value = cat.desc || '';
+      document.getElementById('categoryFormTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-blue-600"></i><span>កែប្រែប្រភេទមុខទំនិញ</span>';
+    };
+
+    window.resetCategoryForm = function() {
+      document.getElementById('categoryForm').reset();
+      document.getElementById('categoryIdInput').value = '';
+      document.getElementById('categoryColorInput').value = '#2563eb';
+      document.getElementById('categoryFormTitle').innerHTML = '<i class="fa-solid fa-folder-plus text-blue-600"></i><span>បង្កើតប្រភេទមុខទំនិញថ្មី</span>';
+    };
+
+    window.deleteCategory = function(id) {
+      const itemsInCat = window.appState.items.filter(i => i.categoryId === id);
+      if (itemsInCat.length > 0) {
+        alert(`មិនអាចលុបបានទេ! មានទំនិញ ${itemsInCat.length} កំពុងស្ថិតក្នុងប្រភេទនេះ`);
+        return;
+      }
+      if (confirm('តើអ្នកចង់លុបប្រភេទនេះមែនទេ?')) {
+        db.ref('categories/' + id).remove();
+        showToast('បានលុបប្រភេទជោគជ័យ!', 'success');
+      }
+    };
+
+    // Tabs
+    window.switchTab = function(tabName) {
+      document.querySelectorAll('.tab-pane').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.nav-tab').forEach(el => {
+        el.classList.remove('text-blue-700', 'bg-blue-100');
+        el.classList.add('text-slate-600');
+      });
+
+      if (tabName === 'items') {
+        document.getElementById('tabContentItems').classList.remove('hidden');
+        document.getElementById('tabBtnItems').classList.add('text-blue-700', 'bg-blue-100');
+        document.getElementById('tabBtnItems').classList.remove('text-slate-600');
+        renderItems();
+      } else if (tabName === 'history') {
+        document.getElementById('tabContentHistory').classList.remove('hidden');
+        document.getElementById('tabBtnHistory').classList.add('text-blue-700', 'bg-blue-100');
+        document.getElementById('tabBtnHistory').classList.remove('text-slate-600');
+        renderHistory();
+      } else if (tabName === 'categories') {
+        document.getElementById('tabContentCategories').classList.remove('hidden');
+        document.getElementById('tabBtnCategories').classList.add('text-blue-700', 'bg-blue-100');
+        document.getElementById('tabBtnCategories').classList.remove('text-slate-600');
+        renderCategories();
+      }
+    };
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+  </script>
 </body>
 </html>
