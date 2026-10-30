@@ -87,27 +87,52 @@
       border-color: #991b1b;
     }
 
-    /* Dedicated A5 Landscape Sheet Layout */
+    /* Fixed A5 Landscape Print Rules */
     @page {
       size: A5 landscape;
-      margin: 8mm 10mm;
+      margin: 6mm 8mm;
     }
     @media print {
-      body {
-        background: white !important;
-        color: black !important;
-        font-size: 10pt !important;
+      /* Force pure light theme on print regardless of Dark Mode */
+      *, *::before, *::after {
+        background: transparent !important;
+        color: #000000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
       }
-      .no-print {
+      html, body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 9pt !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .no-print, header, nav, main, #toastContainer, [role="dialog"] {
         display: none !important;
       }
       #a5PrintArea {
         display: block !important;
         width: 100% !important;
+        page-break-after: avoid !important;
+      }
+      .a5-table {
+        width: 100% !important;
+        border-collapse: collapse !important;
       }
       .a5-table th, .a5-table td {
-        padding: 5px 8px !important;
-        border: 1px solid #94a3b8 !important;
+        padding: 4px 6px !important;
+        border: 1px solid #333333 !important;
+        font-size: 8.5pt !important;
+        line-height: 1.3 !important;
+      }
+      .a5-table th {
+        background-color: #f1f5f9 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+      .print-signature-block {
+        page-break-inside: avoid !important;
       }
     }
     @media screen {
@@ -528,8 +553,8 @@
             <i class="fa-brands fa-google-drive"></i>
           </div>
           <div>
-            <h3 class="font-bold text-slate-900 dark:text-white text-lg sm:text-xl">តភ្ជាប់ Google Drive Backup (Auto Sync ទៅពពក)</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400">រក្សាទុកច្បាប់ចម្លងទិន្នន័យដោយស្វ័យប្រវត្តិចូលក្នុង Google Drive របស់អ្នក (រៀងរាល់ ២៤ ម៉ោង ឬដោយដៃ)</p>
+            <h3 class="font-bold text-slate-900 dark:text-white text-lg sm:text-xl">តភ្ជាប់ Google Drive Backup (Auto Sync រៀងរាល់ ១ ម៉ោង)</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400">រក្សាទុកច្បាប់ចម្លងដោយស្វ័យប្រវត្តិរៀងរាល់ ១ ម៉ោង និងរក្សាទុកត្រឹម ៣ ថ្ងៃចុងក្រោយ (៧២ ម៉ោង លុបម៉ោងទី ១ ដោយស្វ័យប្រវត្តិ)</p>
           </div>
         </div>
 
@@ -622,7 +647,7 @@
       <tbody id="a5PrintTableBody"></tbody>
     </table>
 
-    <div class="grid grid-cols-2 text-center text-xs pt-4 mt-6 border-t border-slate-200">
+    <div class="grid grid-cols-2 text-center text-xs pt-4 mt-6 border-t border-slate-200 print-signature-block">
       <div>
         <p class="font-bold text-slate-800">អ្នករៀបចំរបាយការណ៍</p>
         <div class="h-14"></div>
@@ -1792,20 +1817,23 @@
       }
     };
 
-    async function checkDailyAutoBackup() {
+    // Hourly Auto-Backup Checker (Every 1 Hour)
+    async function checkHourlyAutoBackup() {
       try {
         const lastSnap = await db.ref('settings/lastDriveBackup').once('value');
         const lastTime = lastSnap.val();
-        const oneDayMs = 24 * 60 * 60 * 1000;
+        const oneHourMs = 60 * 60 * 1000; // 1 Hour in milliseconds
         
-        if (!lastTime || (Date.now() - new Date(lastTime).getTime() > oneDayMs)) {
+        if (!lastTime || (Date.now() - new Date(lastTime).getTime() >= oneHourMs)) {
           triggerDriveBackup(false);
         }
       } catch (e) {
-        console.warn("Auto backup skipped", e);
+        console.warn("Hourly auto backup skipped", e);
       }
     }
-    setTimeout(checkDailyAutoBackup, 5000);
+    // Check 5 seconds after opening app, then re-verify every 5 minutes
+    setTimeout(checkHourlyAutoBackup, 5000);
+    setInterval(checkHourlyAutoBackup, 5 * 60 * 1000);
 
     window.exportFullSystemBackup = async function() {
       try {
