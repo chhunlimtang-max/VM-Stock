@@ -157,6 +157,78 @@
         display: none;
       }
     }
+
+    /* ===== Phone layout: only screens under 640px wide. PC/tablet layout is untouched. ===== */
+    .m-tab {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+      padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+      font-size: 12px; font-weight: 700; color: #64748b;
+    }
+    .m-tab i { font-size: 20px; }
+    .m-tab.m-active { color: #2563eb; }
+    .dark .m-tab { color: #94a3b8; }
+    .dark .m-tab.m-active { color: #60a5fa; }
+    #mobileFabs { bottom: calc(62px + env(safe-area-inset-bottom)); }
+
+    @media (max-width: 639.98px) {
+      /* summary boxes: one compact row you swipe sideways */
+      #kpiStrip { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -16px; padding: 0 16px 4px; scrollbar-width: none; }
+      #kpiStrip::-webkit-scrollbar { display: none; }
+      #kpiStrip > div { flex: 0 0 auto; width: 150px; padding: 12px 14px; scroll-snap-align: start; }
+      #kpiStrip > div > div:last-child { display: none; } /* hide the icon square */
+      #kpiStrip h3 { font-size: 22px; margin-top: 0; }
+
+      /* item filters: search on its own line, the 3 dropdowns side by side */
+      #tabContentItems .no-print > div > .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+      #tabContentItems .no-print > div > .grid > div:first-child { grid-column: 1 / -1; }
+      #tabContentItems .no-print > div > .grid select { font-size: 13px; padding: 8px 6px; }
+      #tabContentItems .no-print > div > div:last-child button { padding-top: 8px; padding-bottom: 8px; }
+
+      /* tables become app-style cards */
+      #itemsTable, #itemsTable tbody, #historyTable, #historyTable tbody { display: block; }
+      #itemsTable thead, #historyTable thead { display: none; }
+      #itemsTable tr, #historyTable tr { display: grid; gap: 6px 12px; padding: 14px 16px; align-items: center; }
+      #itemsTable td, #historyTable td { padding: 0; text-align: left; }
+      #itemsTable td[colspan], #historyTable td[colspan] { grid-column: 1 / -1; text-align: center; padding: 24px 0; }
+
+      /* item card: name + big quantity, category + status, cost / sell, action buttons */
+      #itemsTable tr { grid-template-columns: auto 1fr auto; grid-template-areas: "name name qty" "cat status qty" "cost sell sell" "act act act"; }
+      #itemsTable td:nth-child(1) { grid-area: name; }
+      #itemsTable td:nth-child(2) { grid-area: cat; }
+      #itemsTable td:nth-child(3) { grid-area: qty; text-align: right; align-self: start; }
+      #itemsTable td:nth-child(3) span:first-child { font-size: 26px; }
+      #itemsTable td:nth-child(4) { grid-area: cost; display: flex; gap: 4px; align-items: baseline; }
+      #itemsTable td:nth-child(5) { grid-area: sell; display: flex; gap: 4px; align-items: baseline; }
+      #itemsTable td:nth-child(4)::before { content: "ដើម"; font-size: 12px; color: #94a3b8; }
+      #itemsTable td:nth-child(5)::before { content: "លក់"; font-size: 12px; color: #94a3b8; }
+      #itemsTable td:nth-child(6) { grid-area: status; }
+      #itemsTable td:nth-child(7) { grid-area: act; margin-top: 4px; }
+      #itemsTable td:nth-child(7) > div { gap: 8px; }
+      #itemsTable td:nth-child(7) button { flex: 1; margin: 0 !important; padding: 9px 0; border-radius: 12px; background: rgba(148, 163, 184, 0.12); }
+
+      /* history card: tick | name, qty | date, type | price, total | note, edit/delete */
+      #historyTable tr { grid-template-columns: auto 1fr auto; grid-template-areas: "chk name qty" "chk date type" "chk price total" "chk note act"; }
+      #historyTable td:nth-child(1) { grid-area: chk; align-self: center; padding-right: 2px; }
+      #historyTable td:nth-child(2) { grid-area: date; display: flex; gap: 6px; align-items: baseline; white-space: nowrap; min-width: 0; }
+      #historyTable td:nth-child(2) div:first-child { font-size: 14px; }
+      #historyTable td:nth-child(3) span { padding: 2px 8px; }
+      #historyTable td:nth-child(3) { grid-area: type; justify-self: end; }
+      #historyTable td:nth-child(4) { grid-area: name; font-size: 17px; }
+      #historyTable td:nth-child(5) { grid-area: qty; text-align: right; font-size: 18px; }
+      #historyTable td:nth-child(6) { grid-area: price; font-size: 14px; }
+      #historyTable td:nth-child(6)::before { content: "តម្លៃ "; font-size: 12px; color: #94a3b8; font-weight: 400; }
+      #historyTable td:nth-child(7) { grid-area: total; text-align: right; }
+      #historyTable td:nth-child(8) { grid-area: note; font-size: 13px; }
+      #historyTable td:nth-child(9) { grid-area: act; justify-self: end; }
+
+      /* forms open full screen like an app page */
+      #stockActionModal, #itemModal { padding: 0; align-items: stretch; }
+      #stockActionModal > div, #itemModal > div { max-width: none; width: 100%; height: 100%; border-radius: 0; border: 0; overflow-y: auto; }
+      #itemForm { max-height: none; }
+
+      /* messages appear above the bottom bar */
+      #toastContainer { left: 16px; right: 16px; bottom: calc(150px + env(safe-area-inset-bottom)); align-items: stretch; }
+    }
   </style>
 </head>
 <body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased min-h-screen flex flex-col transition-colors duration-200">
@@ -187,15 +259,15 @@
             <span id="syncText" class="hidden lg:inline">Cloud Sync រួចរាល់</span>
           </button>
 
-          <button onclick="openItemModal()" title="បន្ថែមទំនិញថ្មី" aria-label="បន្ថែមទំនិញថ្មី" class="inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-blue-600/30 transition">
+          <button onclick="openItemModal()" title="បន្ថែមទំនិញថ្មី" aria-label="បន្ថែមទំនិញថ្មី" class="hidden sm:inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-blue-600/30 transition">
             <i class="fa-solid fa-plus text-lg sm:mr-2"></i>
             <span class="hidden sm:inline">បន្ថែមទំនិញថ្មី</span>
           </button>
-          <button onclick="openStockModal('IN')" title="ស្តុកចូល (+)" aria-label="ស្តុកចូល" class="inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-emerald-600/30 transition">
+          <button onclick="openStockModal('IN')" title="ស្តុកចូល (+)" aria-label="ស្តុកចូល" class="hidden sm:inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-emerald-600/30 transition">
             <i class="fa-solid fa-circle-plus text-lg mr-1.5 sm:mr-2"></i>
             <span class="hidden sm:inline">ស្តុកចូល (+)</span>
           </button>
-          <button onclick="openStockModal('OUT')" title="ស្តុកចេញ (-)" aria-label="ស្តុកចេញ" class="inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-amber-600/30 transition">
+          <button onclick="openStockModal('OUT')" title="ស្តុកចេញ (-)" aria-label="ស្តុកចេញ" class="hidden sm:inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-amber-600/30 transition">
             <i class="fa-solid fa-circle-minus text-lg mr-1.5 sm:mr-2"></i>
             <span class="hidden sm:inline">ស្តុកចេញ (-)</span>
           </button>
@@ -204,7 +276,7 @@
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 px-4 sm:px-6 lg:px-8">
+    <div class="hidden sm:block bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 px-4 sm:px-6 lg:px-8">
       <!-- auto margins center the tabs but still let them scroll on phones (justify-center would clip the first tab) -->
       <div class="max-w-7xl mx-auto flex gap-2 overflow-x-auto custom-scrollbar py-2.5 [&>*:first-child]:ml-auto [&>*:last-child]:mr-auto">
         <button id="tabBtnItems" onclick="switchTab('items')" class="nav-tab px-5 sm:px-8 py-3 text-base sm:text-lg font-bold rounded-2xl text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 whitespace-nowrap transition flex items-center space-x-2">
@@ -223,10 +295,10 @@
     </div>
   </header>
 
-  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-36 sm:pb-6 space-y-4 sm:space-y-6">
     
     <!-- KPI Summary Cards -->
-    <section class="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4 no-print">
+    <section id="kpiStrip" class="grid grid-cols-2 lg:grid-cols-5 gap-3.5 sm:gap-4 no-print">
       <div class="bg-white dark:bg-slate-800 rounded-2xl p-4 sm:p-5 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
         <div>
           <p class="text-xs sm:text-sm font-semibold text-slate-500 dark:text-slate-400 uppercase">មុខទំនិញសរុប</p>
@@ -330,7 +402,7 @@
         </div>
 
         <div class="overflow-x-auto custom-scrollbar">
-          <table class="w-full text-left border-collapse text-base">
+          <table id="itemsTable" class="w-full text-left border-collapse text-base">
             <thead class="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <tr>
                 <th class="py-4 px-4">ឈ្មោះទំនិញ / កូដ</th>
@@ -430,7 +502,7 @@
 
       <div class="bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden no-print">
         <div class="overflow-x-auto custom-scrollbar">
-          <table class="w-full text-left border-collapse text-base">
+          <table id="historyTable" class="w-full text-left border-collapse text-base">
             <thead class="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <tr>
                 <th class="py-3.5 px-4 text-center w-10">
@@ -853,6 +925,27 @@
         </div>
       </form>
     </div>
+  </div>
+
+  <!-- Phone only: app-style bottom tab bar + floating stock in/out buttons -->
+  <nav id="mobileTabBar" class="sm:hidden no-print fixed bottom-0 inset-x-0 z-40 grid grid-cols-3 bg-white/95 dark:bg-slate-800/95 backdrop-blur border-t border-slate-200 dark:border-slate-700">
+    <button data-mtab="items" onclick="switchTab('items')" class="m-tab m-active">
+      <i class="fa-solid fa-box-archive"></i><span>ទំនិញ</span>
+    </button>
+    <button data-mtab="history" onclick="switchTab('history')" class="m-tab">
+      <i class="fa-solid fa-clock-rotate-left"></i><span>ប្រវត្តិ</span>
+    </button>
+    <button data-mtab="categories" onclick="switchTab('categories')" class="m-tab">
+      <i class="fa-solid fa-tags"></i><span>ប្រភេទ</span>
+    </button>
+  </nav>
+  <div id="mobileFabs" class="sm:hidden no-print fixed inset-x-0 z-40 grid grid-cols-2 gap-3 px-4 py-2 bg-slate-50/95 dark:bg-slate-900/95 backdrop-blur">
+    <button onclick="openStockModal('IN')" class="h-12 rounded-2xl bg-emerald-600 text-white font-bold shadow-md shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2">
+      <i class="fa-solid fa-plus text-lg"></i><span>ស្តុកចូល</span>
+    </button>
+    <button onclick="openStockModal('OUT')" class="h-12 rounded-2xl bg-amber-600 text-white font-bold shadow-md shadow-amber-600/30 active:scale-95 transition flex items-center justify-center gap-2">
+      <i class="fa-solid fa-minus text-lg"></i><span>ស្តុកចេញ</span>
+    </button>
   </div>
 
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none no-print"></div>
@@ -2200,6 +2293,11 @@
       } else if (tabName === 'backup') {
         document.getElementById('tabContentBackup').classList.remove('hidden'); // opened from the Cloud Sync badge, no nav tab
       }
+
+      // Phone layout: highlight the bottom tab, show + / - buttons only on Items and History, start at the top
+      document.querySelectorAll('[data-mtab]').forEach(b => b.classList.toggle('m-active', b.dataset.mtab === tabName));
+      document.getElementById('mobileFabs').classList.toggle('hidden', tabName !== 'items' && tabName !== 'history');
+      if (window.innerWidth < 640) window.scrollTo(0, 0);
     };
 
     function escapeHtml(text) {
