@@ -1,0 +1,19 @@
+{
+  "name": "VM-Stock - ប្រព័ន្ធគ្រប់គ្រងស្តុក",
+  "short_name": "VM-Stock",
+  "description": "ប្រព័ន្ធគ្រប់គ្រងស្តុកទំនិញ Veng Mouy Stock",
+  "lang": "km",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#2563eb",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/2897/2897785.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

@@ -455,7 +455,12 @@
         </div>
 
         <div id="historyPaginationBar" class="px-5 py-3.5 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-slate-600 dark:text-slate-400">
-          <span id="historyPaginationSummary" class="text-slate-500 dark:text-slate-400 font-medium"></span>
+          <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+            <span id="historyPaginationSummary" class="text-slate-500 dark:text-slate-400 font-medium"></span>
+            <button id="btnLoadOlderHistory" onclick="loadOlderHistory()" class="hidden px-3.5 py-1.5 rounded-xl border border-indigo-300 dark:border-indigo-700 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100 dark:hover:bg-indigo-900/50 font-semibold transition">
+              <i class="fa-solid fa-clock-rotate-left mr-1"></i> ផ្ទុកកំណត់ត្រាចាស់ៗបន្ថែម (+200)
+            </button>
+          </div>
           <div class="flex items-center space-x-2">
             <button id="btnPrevHistoryPage" onclick="changeHistoryPage(-1)" class="px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:pointer-events-none font-semibold transition">
               <i class="fa-solid fa-chevron-left mr-1"></i> ថយ
@@ -923,6 +928,20 @@
       if (probe.type === 'date' || !window.flatpickr) return;
       flatpickr('#historyDateFilter', { locale: 'km', dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: true, disableMobile: true });
     })();
+    (function() {
+      const probe = document.createElement('input');
+      probe.setAttribute('type', 'datetime-local');
+      if (probe.type === 'datetime-local' || !window.flatpickr) return;
+      // value keeps the datetime-local form (2026-11-25T14:30) that the save code already reads
+      flatpickr('#stockDateInput', { locale: 'km', enableTime: true, time_24hr: true, dateFormat: 'Y-m-d\\TH:i', altInput: true, altFormat: 'd/m/Y H:i', allowInput: true, disableMobile: true });
+    })();
+
+    // Set the Stock In/Out date box, keeping the calendar's display in step when it is active
+    function setStockDateValue(v) {
+      const el = document.getElementById('stockDateInput');
+      if (el._flatpickr) el._flatpickr.setDate(v, false, 'Y-m-d\\TH:i');
+      else el.value = v;
+    }
 
     // Smart Search Normalizer
     function smartNormalize(text) {
@@ -1020,13 +1039,29 @@
       populateItemSelectForStock();
     });
 
-    db.ref('history').limitToLast(200).on('value', (snapshot) => {
-      const val = snapshot.val();
-      const list = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
-      list.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
-      window.appState.history = list;
-      renderHistory();
-    });
+    // History loads the newest N records; the "load older" button raises N by 200 (keeps opening fast)
+    window.appState.historyLimit = 200;
+    let historyQuery = null;
+    function subscribeHistory() {
+      if (historyQuery) historyQuery.off();
+      historyQuery = db.ref('history').limitToLast(window.appState.historyLimit);
+      historyQuery.on('value', (snapshot) => {
+        const val = snapshot.val();
+        const list = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
+        list.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+        window.appState.history = list;
+        // fewer than the limit came back = everything is loaded
+        document.getElementById('btnLoadOlderHistory').classList.toggle('hidden', list.length < window.appState.historyLimit);
+        renderHistory();
+      });
+    }
+    subscribeHistory();
+
+    window.loadOlderHistory = function() {
+      window.appState.historyLimit += 200;
+      subscribeHistory();
+      showToast('កំពុងផ្ទុកកំណត់ត្រាចាស់ៗបន្ថែម...', 'info');
+    };
 
     db.ref('settings/gdriveWebhook').on('value', snap => {
       const url = snap.val();
@@ -1676,7 +1711,7 @@
       document.getElementById('stockActionType').value = type;
       const now = new Date();
       now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
-      document.getElementById('stockDateInput').value = now.toISOString().slice(0, 16);
+      setStockDateValue(now.toISOString().slice(0, 16));
 
       const header = document.getElementById('stockModalHeader');
       const title = document.getElementById('stockModalTitle');
@@ -1726,7 +1761,7 @@
       if (h.timestamp) {
         const d = new Date(h.timestamp);
         d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-        document.getElementById('stockDateInput').value = d.toISOString().slice(0, 16);
+        setStockDateValue(d.toISOString().slice(0, 16));
       }
       document.getElementById('stockQtyInput').focus();
     };
