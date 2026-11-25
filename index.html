@@ -21,6 +21,11 @@
   <!-- Font Awesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <!-- Calendar pop-up for browsers with no built-in date picker (e.g. Pale Moon) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/flatpickr.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/flatpickr/4.6.13/l10n/km.min.js"></script>
+
   <!-- Firebase Compat Libraries -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
@@ -90,7 +95,7 @@
     /* Fixed A5 Landscape Print Rules */
     @page {
       size: A5 landscape;
-      margin: 6mm 8mm;
+      margin: 0; /* zero margin also hides the browser's own header/footer (title, URL, date) */
     }
     @media print {
       /* Force pure light theme on print regardless of Dark Mode */
@@ -107,6 +112,8 @@
         width: 100% !important;
         margin: 0 !important;
         padding: 0 !important;
+        min-height: 0 !important; /* body is min-h-screen; on paper that can push out a blank 2nd page */
+        display: block !important;
       }
       .no-print, header, nav, main, #toastContainer, [role="dialog"] {
         display: none !important;
@@ -114,18 +121,28 @@
       #a5PrintArea {
         display: block !important;
         width: 100% !important;
+        padding: 6mm 8mm !important;
         page-break-after: avoid !important;
       }
+      /* Khmer needs taller line-height or stacked vowels overlap */
+      #a5PrintArea p { font-size: 7.5pt !important; line-height: 1.6 !important; margin: 0 !important; }
+      #a5PrintArea h2 { font-size: 11pt !important; line-height: 1.6 !important; margin: 0 !important; }
+      #a5PrintArea .print-header { padding-bottom: 1.5mm !important; margin-bottom: 2mm !important; }
       .a5-table {
         width: 100% !important;
         border-collapse: collapse !important;
+        margin-bottom: 3mm !important;
       }
       .a5-table th, .a5-table td {
-        padding: 4px 6px !important;
+        padding: 1px 4px !important;
         border: 1px solid #333333 !important;
-        font-size: 8.5pt !important;
-        line-height: 1.3 !important;
+        font-size: 8pt !important;
+        line-height: 1.5 !important;
+        white-space: nowrap !important;
       }
+      .a5-table td.print-wrap { white-space: normal !important; }
+      .print-signature-block { padding-top: 2mm !important; margin-top: 2mm !important; }
+      .print-signature-block .h-14 { height: 9mm !important; }
       .a5-table th {
         background-color: #f1f5f9 !important;
         -webkit-print-color-adjust: exact !important;
@@ -147,7 +164,7 @@
   <!-- Main Top Header -->
   <header class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 sticky top-0 z-30 shadow-sm no-print transition-colors">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between items-center h-20 py-2">
+      <div class="flex flex-wrap justify-between items-center gap-y-2 min-h-[5rem] py-2">
         <div class="flex items-center space-x-3.5">
           <div class="w-12 h-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/25 text-2xl">
             <i class="fa-solid fa-boxes-stacked"></i>
@@ -158,24 +175,29 @@
           </div>
         </div>
 
-        <div class="flex items-center space-x-2 sm:space-x-3">
+        <div class="flex items-center space-x-2 sm:space-x-3 ml-auto">
           <!-- Dark Mode Toggle Button -->
           <button onclick="toggleDarkMode()" id="darkModeToggleBtn" title="ប្តូរពណ៌ Dark / Light Mode" class="w-11 h-11 rounded-2xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-amber-400 flex items-center justify-center text-lg active:scale-95 transition">
             <i id="darkModeIcon" class="fa-solid fa-moon"></i>
           </button>
 
-          <div id="syncStatusBadge" class="hidden lg:inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2 animate-pulse"></span>
-            <span id="syncText">Cloud Sync រួចរាល់</span>
-          </div>
-
-          <button onclick="openStockModal('IN')" class="inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-emerald-600/30 transition">
-            <i class="fa-solid fa-circle-plus text-lg mr-1.5 sm:mr-2"></i>
-            <span>ស្តុកចូល (+)</span>
+          <button type="button" id="syncStatusBadge" onclick="switchTab('backup')" title="បម្រុងទុកទិន្នន័យ (Backup & Sync)" aria-label="បម្រុងទុកទិន្នន័យ (Backup & Sync)" class="inline-flex items-center px-3 lg:px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 active:scale-95 transition cursor-pointer">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 lg:mr-2 animate-pulse"></span>
+            <i class="fa-solid fa-cloud ml-1.5 lg:hidden"></i>
+            <span id="syncText" class="hidden lg:inline">Cloud Sync រួចរាល់</span>
           </button>
-          <button onclick="openStockModal('OUT')" class="inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-amber-600/30 transition">
+
+          <button onclick="openItemModal()" title="បន្ថែមទំនិញថ្មី" aria-label="បន្ថែមទំនិញថ្មី" class="inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-blue-600/30 transition">
+            <i class="fa-solid fa-plus text-lg sm:mr-2"></i>
+            <span class="hidden sm:inline">បន្ថែមទំនិញថ្មី</span>
+          </button>
+          <button onclick="openStockModal('IN')" title="ស្តុកចូល (+)" aria-label="ស្តុកចូល" class="inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-emerald-600/30 transition">
+            <i class="fa-solid fa-circle-plus text-lg mr-1.5 sm:mr-2"></i>
+            <span class="hidden sm:inline">ស្តុកចូល (+)</span>
+          </button>
+          <button onclick="openStockModal('OUT')" title="ស្តុកចេញ (-)" aria-label="ស្តុកចេញ" class="inline-flex items-center justify-center px-3.5 sm:px-5 py-2.5 sm:py-3 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-sm sm:text-base font-bold rounded-2xl shadow-md shadow-amber-600/30 transition">
             <i class="fa-solid fa-circle-minus text-lg mr-1.5 sm:mr-2"></i>
-            <span>ស្តុកចេញ (-)</span>
+            <span class="hidden sm:inline">ស្តុកចេញ (-)</span>
           </button>
         </div>
       </div>
@@ -183,22 +205,19 @@
 
     <!-- Navigation Tabs -->
     <div class="bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-7xl mx-auto flex space-x-2 overflow-x-auto custom-scrollbar py-2.5">
-        <button id="tabBtnItems" onclick="switchTab('items')" class="nav-tab px-4 sm:px-5 py-2 text-base font-bold rounded-xl text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 whitespace-nowrap transition flex items-center space-x-2">
-          <i class="fa-solid fa-box-archive text-lg"></i>
+      <!-- auto margins center the tabs but still let them scroll on phones (justify-center would clip the first tab) -->
+      <div class="max-w-7xl mx-auto flex gap-2 overflow-x-auto custom-scrollbar py-2.5 [&>*:first-child]:ml-auto [&>*:last-child]:mr-auto">
+        <button id="tabBtnItems" onclick="switchTab('items')" class="nav-tab px-5 sm:px-8 py-3 text-base sm:text-lg font-bold rounded-2xl text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 whitespace-nowrap transition flex items-center space-x-2">
+          <i class="fa-solid fa-box-archive text-xl"></i>
           <span>បញ្ជីទំនិញក្នុងស្តុក (Items)</span>
         </button>
-        <button id="tabBtnHistory" onclick="switchTab('history')" class="nav-tab px-4 sm:px-5 py-2 text-base font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 whitespace-nowrap transition flex items-center space-x-2">
-          <i class="fa-solid fa-clock-rotate-left text-lg"></i>
+        <button id="tabBtnHistory" onclick="switchTab('history')" class="nav-tab px-5 sm:px-8 py-3 text-base sm:text-lg font-bold rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 whitespace-nowrap transition flex items-center space-x-2">
+          <i class="fa-solid fa-clock-rotate-left text-xl"></i>
           <span>ប្រវត្តិនាំចូល/ចេញ (History)</span>
         </button>
-        <button id="tabBtnCategories" onclick="switchTab('categories')" class="nav-tab px-4 sm:px-5 py-2 text-base font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 whitespace-nowrap transition flex items-center space-x-2">
-          <i class="fa-solid fa-tags text-lg"></i>
+        <button id="tabBtnCategories" onclick="switchTab('categories')" class="nav-tab px-5 sm:px-8 py-3 text-base sm:text-lg font-bold rounded-2xl text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 whitespace-nowrap transition flex items-center space-x-2">
+          <i class="fa-solid fa-tags text-xl"></i>
           <span>ប្រភេទ & ឯកតារាប់ (Categories & Units)</span>
-        </button>
-        <button id="tabBtnBackup" onclick="switchTab('backup')" class="nav-tab px-4 sm:px-5 py-2 text-base font-bold rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-200/70 dark:hover:bg-slate-700/60 whitespace-nowrap transition flex items-center space-x-2">
-          <i class="fa-solid fa-shield-halved text-lg"></i>
-          <span>បម្រុងទុកទិន្នន័យ (Backup & Sync)</span>
         </button>
       </div>
     </div>
@@ -386,18 +405,22 @@
           </div>
 
           <div class="sm:w-48">
-            <input type="date" id="historyDateFilter" onchange="filterHistory()" class="w-full py-2 px-3 border border-slate-300 dark:border-slate-600 rounded-xl text-base focus:outline-none bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+            <input type="date" id="historyDateFilter" onchange="filterHistory()" oninput="filterHistory()" placeholder="ថ្ងៃ/ខែ/ឆ្នាំ ឧ. 22/11/2026" title="ថ្ងៃ/ខែ/ឆ្នាំ ឧ. 22/11/2026" class="w-full py-2 px-3 border border-slate-300 dark:border-slate-600 rounded-xl text-base focus:outline-none bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
           </div>
         </div>
 
-        <div class="flex items-center space-x-2 bg-slate-50 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
-          <select id="printTimeRangeSelect" class="py-2 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-sm font-semibold focus:outline-none text-slate-700 dark:text-slate-200">
-            <option value="1min" selected>១ នាទីមុន (1 min)</option>
-            <option value="5min">៥ នាទីមុន (5 mins)</option>
+        <div class="flex flex-wrap items-center gap-2 bg-slate-50 dark:bg-slate-900/60 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700">
+          <select id="printTimeRangeSelect" onchange="quickSelectByTime(this.value)" title="បង្ហាញ និងធីកតាមពេលវេលា" class="py-2 px-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-xl text-sm font-semibold focus:outline-none text-slate-700 dark:text-slate-200">
+            <option value="" selected>គ្រប់ពេលទាំងអស់</option>
+            <option value="10min">១០ នាទីមុន (10 mins)</option>
             <option value="1hour">១ ម៉ោងមុន (1 hr)</option>
-            <option value="1day">១ ថ្ងៃមុន (1 day)</option>
-            <option value="all">ទាំងអស់តាម Search</option>
+            <option value="12hour">១២ ម៉ោងមុន (12 hrs)</option>
+            <option value="today">ថ្ងៃនេះ (Today)</option>
           </select>
+          <span id="printSelectedCount" class="text-sm font-bold text-indigo-700 dark:text-indigo-300 px-1">បានជ្រើស 0</span>
+          <button onclick="clearPrintSelection()" title="សម្អាតការជ្រើសរើស" class="px-3 py-2 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 text-sm font-semibold rounded-xl transition">
+            សម្អាត
+          </button>
           <button onclick="printA5HistoryReport()" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-base font-bold rounded-xl shadow-sm transition whitespace-nowrap">
             <i class="fa-solid fa-print mr-2 text-lg"></i>
             <span>បោះពុម្ព A5</span>
@@ -410,6 +433,9 @@
           <table class="w-full text-left border-collapse text-base">
             <thead class="bg-slate-50 dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-700 text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
               <tr>
+                <th class="py-3.5 px-4 text-center w-10">
+                  <input type="checkbox" id="historySelectPageBox" onchange="togglePageSelection(this.checked)" title="ជ្រើសទាំងអស់ក្នុងទំព័រនេះ" aria-label="ជ្រើសទាំងអស់ក្នុងទំព័រនេះ" class="w-5 h-5 accent-indigo-600 cursor-pointer">
+                </th>
                 <th class="py-3.5 px-4">កាលបរិច្ឆេទ & ម៉ោង</th>
                 <th class="py-3.5 px-4">ប្រភេទ</th>
                 <th class="py-3.5 px-4">ឈ្មោះទំនិញ</th>
@@ -417,12 +443,12 @@
                 <th class="py-3.5 px-4 text-right">តម្លៃរាយ</th>
                 <th class="py-3.5 px-4 text-right">សរុបទឹកប្រាក់</th>
                 <th class="py-3.5 px-4">សម្គាល់</th>
-                <th class="py-3.5 px-4 text-center">លុប</th>
+                <th class="py-3.5 px-4 text-center">សកម្មភាព</th>
               </tr>
             </thead>
             <tbody id="historyTableBody" class="divide-y divide-slate-100 dark:divide-slate-700/50">
               <tr>
-                <td colspan="8" class="py-12 text-center text-slate-400">មិនទាន់មានកំណត់ត្រាប្រតិបត្តិការទេ</td>
+                <td colspan="9" class="py-12 text-center text-slate-400">មិនទាន់មានកំណត់ត្រាប្រតិបត្តិការទេ</td>
               </tr>
             </tbody>
           </table>
@@ -624,9 +650,8 @@
 
   <!-- DEDICATED A5 PRINT SHEET -->
   <div id="a5PrintArea" class="p-4">
-    <div class="text-center pb-3 border-b border-slate-300 mb-3">
-      <h2 class="text-xl font-bold uppercase tracking-wider text-slate-900">របាយការណ៍ប្រវត្តិនាំចូល / នាំចេញស្តុកទំនិញ</h2>
-      <p class="text-xs text-slate-600 mt-0.5">ប្រព័ន្ធគ្រប់គ្រងស្តុក VM-Stock Realtime Cloud | ទំហំក្រដាស A5</p>
+    <div class="print-header text-center pb-3 border-b border-slate-300 mb-3">
+      <h2 class="text-xl font-bold tracking-wider text-slate-900">Veng Mouy Stock</h2>
       <p id="printGeneratedTime" class="text-xs text-slate-500 mt-0.5"></p>
       <p id="printRangeNotice" class="text-xs font-semibold text-slate-700 mt-0.5"></p>
     </div>
@@ -676,20 +701,22 @@
 
       <form id="stockActionForm" onsubmit="handleStockActionSubmit(event)" class="p-6 space-y-4">
         <input type="hidden" id="stockActionType" value="IN">
+        <!-- set only when editing an existing history record -->
+        <input type="hidden" id="stockEditHistoryId" value="">
 
         <div>
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">ស្វែងរកទំនិញរហ័ស (Smart Search)</label>
-          <div class="relative mb-2">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-              <i class="fa-solid fa-magnifying-glass text-xs"></i>
+          <label for="stockModalSearchInput" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">ស្វែងរក និងជ្រើសរើសទំនិញ *</label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <i class="fa-solid fa-magnifying-glass"></i>
             </span>
-            <input type="text" id="stockModalSearchInput" oninput="filterStockModalItems(this.value)" placeholder="វាយឈ្មោះទំនិញ ឬលេខកូដ..." class="w-full pl-8 pr-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl text-sm focus:outline-none bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-200">
+            <input type="text" id="stockModalSearchInput" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="stockItemSuggestions" aria-expanded="false"
+              oninput="filterStockModalItems(this.value)" onfocus="showStockSuggestions()" onblur="hideStockSuggestions()" onkeydown="stockSearchKeydown(event)"
+              placeholder="វាយឈ្មោះទំនិញ ឬលេខកូដ..." class="w-full pl-10 pr-3.5 py-2.5 border border-slate-300 dark:border-slate-600 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
+            <div id="stockItemSuggestions" role="listbox" class="hidden absolute z-20 left-0 right-0 mt-1 max-h-64 overflow-y-auto custom-scrollbar bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-xl shadow-xl"></div>
           </div>
-
-          <label class="block text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase mb-1">ជ្រើសរើសទំនិញ *</label>
-          <select id="stockItemSelect" required onchange="onStockItemSelectChanged()" class="w-full py-2.5 px-3.5 border border-slate-300 dark:border-slate-600 rounded-xl text-base focus:outline-none bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">
-            <option value="">-- សូមជ្រើសរើសទំនិញ --</option>
-          </select>
+          <!-- chosen item id; submit + onStockItemSelectChanged read .value from here -->
+          <input type="hidden" id="stockItemSelect" value="">
         </div>
 
         <div id="stockCurrentInfoBox" class="p-3.5 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-700 rounded-2xl flex items-center justify-between text-sm text-slate-700 dark:text-slate-300 font-medium">
@@ -887,6 +914,15 @@
       }
     }
     initDarkMode();
+
+    // Browsers with no date picker (Pale Moon) show type="date" as a bare text box: give them a calendar.
+    // Chrome/Edge keep their own picker. Value stays YYYY-MM-DD; the box shows 22/11/2026.
+    (function() {
+      const probe = document.createElement('input');
+      probe.setAttribute('type', 'date');
+      if (probe.type === 'date' || !window.flatpickr) return;
+      flatpickr('#historyDateFilter', { locale: 'km', dateFormat: 'Y-m-d', altInput: true, altFormat: 'd/m/Y', allowInput: true, disableMobile: true });
+    })();
 
     // Smart Search Normalizer
     function smartNormalize(text) {
@@ -1286,38 +1322,107 @@
       }
     };
 
+    // Pop-up item search in the Stock In/Out modal
+    let stockSuggestionIds = [];
+    let stockSuggestionActive = 0;
+
     function populateItemSelectForStock(filterTerm = '') {
-      const select = document.getElementById('stockItemSelect');
-      const cur = select.value;
+      const box = document.getElementById('stockItemSuggestions');
+      // shortcut: shows first 50 matches only, type more to narrow down
+      const matched = window.appState.items.filter(i => smartMatch(`${i.name || ''} ${i.sku || ''}`, filterTerm)).slice(0, 50);
+      stockSuggestionIds = matched.map(i => i.id);
+      if (stockSuggestionActive >= matched.length) stockSuggestionActive = 0;
 
-      const matched = window.appState.items.filter(i => {
-        const blob = `${i.name || ''} ${i.sku || ''}`;
-        return smartMatch(blob, filterTerm);
-      });
-
-      select.innerHTML = '<option value="">-- សូមជ្រើសរើសទំនិញ --</option>' + 
-        matched.map(item => {
-          const curr = item.currency || 'USD';
-          const sym = curr === 'KHR' ? '៛' : '$';
-          return `<option value="${item.id}">${escapeHtml(item.name)} (${item.quantity} ${item.unit || 'ឯកតា'} | ${sym})</option>`;
-        }).join('');
-      
-      if (cur && matched.some(i => i.id === cur)) {
-        select.value = cur;
-      }
+      box.innerHTML = matched.length === 0
+        ? '<div class="px-4 py-3 text-sm text-slate-400">រកមិនឃើញទំនិញទេ</div>'
+        : matched.map((item, idx) => {
+            const qty = Number(item.quantity || 0);
+            const sym = (item.currency || 'USD') === 'KHR' ? '៛' : '$';
+            return `
+              <div role="option" aria-selected="${idx === stockSuggestionActive}" onmousedown="event.preventDefault(); pickStockItem('${item.id}')"
+                class="px-4 py-2.5 cursor-pointer flex items-center justify-between gap-3 border-b border-slate-100 dark:border-slate-700/60 last:border-0 ${idx === stockSuggestionActive ? 'bg-blue-50 dark:bg-blue-900/40' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}">
+                <div class="min-w-0">
+                  <div class="font-bold text-slate-900 dark:text-white truncate">${escapeHtml(item.name)}</div>
+                  <div class="text-xs text-slate-400">${escapeHtml(item.sku || '')} ${sym}</div>
+                </div>
+                <span class="shrink-0 text-sm font-bold ${qty <= 0 ? 'text-rose-600' : 'text-emerald-600 dark:text-emerald-400'}">${qty.toLocaleString()} ${escapeHtml(item.unit || 'ឯកតា')}</span>
+              </div>`;
+          }).join('');
     }
 
-    window.filterStockModalItems = function(term) {
-      populateItemSelectForStock(term);
-      onStockItemSelectChanged();
+    window.showStockSuggestions = function() {
+      if (document.getElementById('stockModalSearchInput').readOnly) return; // item is locked while editing
+      populateItemSelectForStock(document.getElementById('stockModalSearchInput').value);
+      document.getElementById('stockItemSuggestions').classList.remove('hidden');
+      document.getElementById('stockModalSearchInput').setAttribute('aria-expanded', 'true');
     };
 
-    // Render History
-    window.renderHistory = function() {
-      const tbody = document.getElementById('historyTableBody');
+    window.hideStockSuggestions = function() {
+      document.getElementById('stockItemSuggestions').classList.add('hidden');
+      document.getElementById('stockModalSearchInput').setAttribute('aria-expanded', 'false');
+    };
+
+    window.filterStockModalItems = function(term) {
+      // typing again means a new choice: clear the old one until an item is picked
+      document.getElementById('stockItemSelect').value = '';
+      stockSuggestionActive = 0;
+      onStockItemSelectChanged();
+      showStockSuggestions();
+    };
+
+    window.pickStockItem = function(itemId, keepFocus = true) {
+      const item = window.appState.items.find(i => i.id === itemId);
+      if (!item) return;
+      document.getElementById('stockItemSelect').value = itemId;
+      document.getElementById('stockModalSearchInput').value = item.name;
+      hideStockSuggestions();
+      onStockItemSelectChanged();
+      if (keepFocus) document.getElementById('stockQtyInput').focus();
+    };
+
+    window.stockSearchKeydown = function(e) {
+      const box = document.getElementById('stockItemSuggestions');
+      if (e.key === 'Escape') { hideStockSuggestions(); return; }
+      if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp' && e.key !== 'Enter') return;
+      if (box.classList.contains('hidden')) { if (e.key !== 'Enter') showStockSuggestions(); return; }
+      e.preventDefault(); // Enter must not submit the form here
+      if (e.key === 'Enter') {
+        if (stockSuggestionIds[stockSuggestionActive]) pickStockItem(stockSuggestionIds[stockSuggestionActive]);
+        return;
+      }
+      const n = stockSuggestionIds.length;
+      if (!n) return;
+      stockSuggestionActive = (stockSuggestionActive + (e.key === 'ArrowDown' ? 1 : -1) + n) % n;
+      populateItemSelectForStock(document.getElementById('stockModalSearchInput').value);
+      box.children[stockSuggestionActive]?.scrollIntoView({ block: 'nearest' });
+    };
+
+    // Rows ticked for printing (history record ids)
+    window.appState.printSelected = new Set();
+
+    // YYYY-MM-DD in local (Cambodia) time; toISOString() would give the UTC day, off by one before 7am
+    function localDateKey(d) {
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // Browsers without a date picker (e.g. Pale Moon) show a plain text box, so also accept typed
+    // day/month/year: 22/11/2026, 22-11-2026, 22.11.26. Unfinished or invalid input = no date filter.
+    function parseHistoryDateFilter(raw) {
+      const v = (raw || '').trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(v)) return v;
+      const m = v.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2}|\d{4})$/);
+      if (!m) return '';
+      const year = m[3].length === 2 ? 2000 + Number(m[3]) : Number(m[3]);
+      const d = new Date(year, Number(m[2]) - 1, Number(m[1]));
+      if (d.getDate() !== Number(m[1]) || d.getMonth() !== Number(m[2]) - 1) return ''; // e.g. 31/02
+      return localDateKey(d);
+    }
+
+    // History list after search/type/date filters, newest first
+    function getFilteredHistory() {
       const search = (document.getElementById('historySearchInput')?.value || '').trim();
       const typeFilter = document.getElementById('historyTypeFilter')?.value || 'ALL';
-      const dateFilter = document.getElementById('historyDateFilter')?.value || '';
+      const dateFilter = parseHistoryDateFilter(document.getElementById('historyDateFilter')?.value);
 
       const filtered = window.appState.history.filter(h => {
         const item = window.appState.items.find(i => i.id === h.itemId);
@@ -1329,11 +1434,28 @@
         const matchType = typeFilter === 'ALL' || h.type === typeFilter;
         let matchDate = true;
         if (dateFilter && h.timestamp) {
-          const transDate = new Date(h.timestamp).toISOString().split('T')[0];
-          matchDate = transDate === dateFilter;
+          matchDate = localDateKey(new Date(h.timestamp)) === dateFilter;
         }
-        return matchSearch && matchType && matchDate;
+        const cutoff = getTimeRangeCutoff();
+        const matchTime = cutoff === null || new Date(h.timestamp || 0).getTime() >= cutoff;
+        return matchSearch && matchType && matchDate && matchTime;
       });
+      return filtered; // appState.history is stored newest-first
+    }
+
+    // Start time (ms) of the chosen time frame, or null for all time
+    function getTimeRangeCutoff() {
+      const range = document.getElementById('printTimeRangeSelect')?.value;
+      if (range === 'today') return new Date().setHours(0, 0, 0, 0); // since midnight, not last 24h
+      const windows = { '10min': 10 * 60e3, '1hour': 60 * 60e3, '12hour': 12 * 60 * 60e3 };
+      return windows[range] ? Date.now() - windows[range] : null;
+    }
+
+    // Render History
+    window.renderHistory = function() {
+      const tbody = document.getElementById('historyTableBody');
+      const filtered = getFilteredHistory();
+      updatePrintSelectedCount();
 
       const totalHistory = filtered.length;
       const totalPages = Math.max(1, Math.ceil(totalHistory / window.appState.historyPerPage));
@@ -1341,8 +1463,9 @@
       if (window.appState.historyPage < 1) window.appState.historyPage = 1;
 
       if (totalHistory === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="py-12 text-center text-slate-400">មិនមានប្រវត្តិប្រតិបត្តិការតាមលក្ខខណ្ឌស្វែងរកឡើយ</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="9" class="py-12 text-center text-slate-400">មិនមានប្រវត្តិប្រតិបត្តិការតាមលក្ខខណ្ឌស្វែងរកឡើយ</td></tr>`;
         document.getElementById('historyPaginationSummary').innerText = 'មិនមានកំណត់ត្រា';
+        document.getElementById('historySelectPageBox').checked = false;
         return;
       }
 
@@ -1355,6 +1478,9 @@
       document.getElementById('btnPrevHistoryPage').disabled = window.appState.historyPage <= 1;
       document.getElementById('btnNextHistoryPage').disabled = window.appState.historyPage >= totalPages;
 
+      const selected = window.appState.printSelected;
+      document.getElementById('historySelectPageBox').checked = pageSlice.every(h => selected.has(h.id));
+
       tbody.innerHTML = pageSlice.map(h => {
         const isIn = h.type === 'IN';
         const dateObj = h.timestamp ? new Date(h.timestamp) : new Date();
@@ -1366,7 +1492,10 @@
         const curr = h.currency || 'USD';
 
         return `
-          <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition">
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-700/40 transition ${selected.has(h.id) ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''}">
+            <td class="py-3 px-4 text-center">
+              <input type="checkbox" ${selected.has(h.id) ? 'checked' : ''} onchange="togglePrintRow('${h.id}', this.checked)" aria-label="ជ្រើសដើម្បីបោះពុម្ព" class="w-5 h-5 accent-indigo-600 cursor-pointer">
+            </td>
             <td class="py-3 px-4">
               <div class="font-bold text-slate-800 dark:text-slate-200">${dateStr}</div>
               <div class="text-xs text-slate-400">${timeStr}</div>
@@ -1384,7 +1513,10 @@
             <td class="py-3 px-4 text-right text-slate-700 dark:text-slate-300 font-semibold">${formatMoney(unitPrice, curr)}</td>
             <td class="py-3 px-4 text-right font-bold text-slate-900 dark:text-white">${formatMoney(totalAmount, curr)}</td>
             <td class="py-3 px-4 text-slate-600 dark:text-slate-400 text-sm">${escapeHtml(h.note || '-')}</td>
-            <td class="py-3 px-4 text-center">
+            <td class="py-3 px-4 text-center whitespace-nowrap">
+              <button onclick="openEditHistory('${h.id}')" title="កែប្រែកំណត់ត្រានេះ" aria-label="កែប្រែកំណត់ត្រានេះ" class="p-2 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/40 rounded-xl transition">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
               <button onclick="deleteHistoryRecord('${h.id}')" title="លុបកំណត់ត្រានេះ" class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/40 rounded-xl transition">
                 <i class="fa-solid fa-trash-can"></i>
               </button>
@@ -1394,10 +1526,43 @@
       }).join('');
     };
 
-    window.deleteHistoryRecord = function(recordId) {
-      if (confirm('តើអ្នកពិតជាចង់លុបកំណត់ត្រាប្រវត្តិនេះមែនទេ?')) {
-        db.ref('history/' + recordId).remove();
+    // Deleting a history row also undoes its effect on the item's stock
+    window.deleteHistoryRecord = async function(recordId) {
+      const h = window.appState.history.find(x => x.id === recordId);
+      if (!h) return;
+      const item = window.appState.items.find(i => i.id === h.itemId);
+      const qty = Number(h.quantity || 0);
+
+      // Item itself was deleted: nothing to give back, just remove the record
+      if (!item) {
+        if (!confirm(`ទំនិញ "${h.itemName || ''}" មិនមានក្នុងស្តុកទៀតទេ។ លុបតែកំណត់ត្រានេះ?`)) return;
+        await db.ref('history/' + recordId).remove();
         showToast('បានលុបប្រវត្តិប្រតិបត្តិការជោគជ័យ', 'info');
+        return;
+      }
+
+      const currentQty = Number(item.quantity || 0);
+      const newQty = h.type === 'OUT' ? currentQty + qty : currentQty - qty;
+      const unit = item.unit || 'ឯកតា';
+
+      if (newQty < 0) {
+        showToast(`មិនអាចលុបបានទេ! ស្តុក "${item.name}" សល់តែ ${currentQty} ${unit} (ត្រូវដក ${qty})`, 'error');
+        return;
+      }
+
+      const change = h.type === 'OUT' ? `+${qty}` : `-${qty}`;
+      if (!confirm(`លុបកំណត់ត្រានេះ ហើយកែស្តុកវិញ?\n\n"${item.name}": ${currentQty} → ${newQty} ${unit} (${change})`)) return;
+
+      try {
+        // one atomic write: record removed and stock corrected together, or neither
+        await db.ref().update({
+          ['history/' + recordId]: null,
+          ['items/' + item.id + '/quantity']: newQty
+        });
+        showToast(`បានលុប និងកែស្តុក "${item.name}" ${change} ជោគជ័យ`, 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('មានបញ្ហាក្នុងការលុប', 'error');
       }
     };
 
@@ -1405,63 +1570,61 @@
     window.changeHistoryPage = function(delta) { window.appState.historyPage += delta; renderHistory(); };
 
     // Dedicated A5 Print Report
-    window.printA5HistoryReport = function() {
-      const timeRange = document.getElementById('printTimeRangeSelect').value;
-      const now = Date.now();
-      
-      let cutoff = null;
-      let rangeLabel = "";
+    // Print selection helpers
+    function updatePrintSelectedCount() {
+      const el = document.getElementById('printSelectedCount');
+      if (el) el.innerText = `បានជ្រើស ${window.appState.printSelected.size}`;
+    }
 
-      if (timeRange === '1min') {
-        cutoff = now - (1 * 60 * 1000);
-        rangeLabel = "កំណត់ត្រាប្រតិបត្តិការក្នុង ១ នាទីចុងក្រោយ (Last 1 minute)";
-      } else if (timeRange === '5min') {
-        cutoff = now - (5 * 60 * 1000);
-        rangeLabel = "កំណត់ត្រាប្រតិបត្តិការក្នុង ៥ នាទីចុងក្រោយ (Last 5 minutes)";
-      } else if (timeRange === '1hour') {
-        cutoff = now - (60 * 60 * 1000);
-        rangeLabel = "កំណត់ត្រាប្រតិបត្តិការក្នុង ១ ម៉ោងចុងក្រោយ (Last 1 hour)";
-      } else if (timeRange === '1day') {
-        cutoff = now - (24 * 60 * 60 * 1000);
-        rangeLabel = "កំណត់ត្រាប្រតិបត្តិការក្នុង ២៤ ម៉ោងចុងក្រោយ (Last 24 hours)";
-      } else {
-        rangeLabel = "កំណត់ត្រាប្រតិបត្តិការទាំងអស់ស្របតាមការចម្រាញ់ (All filtered)";
-      }
+    window.togglePrintRow = function(id, checked) {
+      checked ? window.appState.printSelected.add(id) : window.appState.printSelected.delete(id);
+      renderHistory();
+    };
 
-      const search = (document.getElementById('historySearchInput')?.value || '').trim();
-      const typeFilter = document.getElementById('historyTypeFilter')?.value || 'ALL';
-
-      const filtered = window.appState.history.filter(h => {
-        const item = window.appState.items.find(i => i.id === h.itemId);
-        const itemName = item ? item.name : (h.itemName || '');
-        const note = h.note || '';
-        const historyBlob = `${itemName} ${note}`;
-
-        const matchSearch = smartMatch(historyBlob, search);
-        const matchType = typeFilter === 'ALL' || h.type === typeFilter;
-
-        let matchTime = true;
-        if (cutoff !== null) {
-          const itemTime = new Date(h.timestamp || 0).getTime();
-          matchTime = itemTime >= cutoff;
-        }
-
-        return matchSearch && matchType && matchTime;
+    window.togglePageSelection = function(checked) {
+      const start = (window.appState.historyPage - 1) * window.appState.historyPerPage;
+      getFilteredHistory().slice(start, start + window.appState.historyPerPage).forEach(h => {
+        checked ? window.appState.printSelected.add(h.id) : window.appState.printSelected.delete(h.id);
       });
+      renderHistory();
+    };
+
+    window.clearPrintSelection = function() {
+      window.appState.printSelected.clear();
+      renderHistory();
+    };
+
+    // Time dropdown: shows only rows in that time frame and ticks exactly those rows
+    window.quickSelectByTime = function(timeRange) {
+      window.appState.historyPage = 1;
+      window.appState.printSelected.clear();
+      if (timeRange) {
+        const matches = getFilteredHistory();
+        matches.forEach(h => window.appState.printSelected.add(h.id));
+        if (matches.length === 0) showToast('មិនមានប្រតិបត្តិការក្នុងចន្លោះពេលដែលបានជ្រើសរើសឡើយ', 'warning');
+      }
+      renderHistory();
+    };
+
+    window.printA5HistoryReport = function() {
+      const selected = window.appState.printSelected;
+      // Newest first, same as on screen; skips ids deleted since being ticked
+      const filtered = window.appState.history.filter(h => selected.has(h.id));
 
       if (filtered.length === 0) {
-        showToast('មិនមានប្រតិបត្តិការក្នុងចន្លោះពេលដែលបានជ្រើសរើសឡើយ', 'warning');
+        showToast('សូមធីកជ្រើសរើសប្រតិបត្តិការដែលចង់បោះពុម្ពជាមុនសិន', 'warning');
         return;
       }
 
       document.getElementById('printGeneratedTime').innerText = `កាលបរិច្ឆេទ & ម៉ោងបោះពុម្ព៖ ${new Date().toLocaleString('km-KH')}`;
-      document.getElementById('printRangeNotice').innerText = `ជួរទិន្នន័យ៖ ${rangeLabel} (ចំនួនសរុប ${filtered.length} ប្រតិបត្តិការ)`;
-      
+      document.getElementById('printRangeNotice').innerText = `ជួរទិន្នន័យ៖ កំណត់ត្រាដែលបានជ្រើសរើស (ចំនួនសរុប ${filtered.length} ប្រតិបត្តិការ)`;
+
       const printTbody = document.getElementById('a5PrintTableBody');
-      printTbody.innerHTML = filtered.slice(0, 45).map((h, index) => {
+      printTbody.innerHTML = filtered.map((h, index) => {
         const isIn = h.type === 'IN';
         const dateObj = h.timestamp ? new Date(h.timestamp) : new Date();
-        const dateStr = dateObj.toLocaleDateString('km-KH') + ' ' + dateObj.toLocaleTimeString('km-KH', { hour: '2-digit', minute: '2-digit' });
+        // short 24h form (22/11/26 19:31) so the column never wraps on A5
+        const dateStr = dateObj.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) + ' ' + dateObj.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
         const unitPrice = Number(h.unitPrice || 0);
         const qty = Number(h.quantity || 0);
         const curr = h.currency || 'USD';
@@ -1471,11 +1634,11 @@
             <td class="text-center font-bold">${index + 1}</td>
             <td>${dateStr}</td>
             <td class="font-bold ${isIn ? 'text-emerald-700' : 'text-amber-700'}">${isIn ? 'នាំចូល' : 'នាំចេញ'}</td>
-            <td class="font-bold">${escapeHtml(h.itemName || 'ទំនិញ')}</td>
+            <td class="font-bold print-wrap">${escapeHtml(h.itemName || 'ទំនិញ')}</td>
             <td class="text-center font-bold">${qty.toLocaleString()} ${escapeHtml(h.unit || '')}</td>
             <td class="text-right">${formatMoney(unitPrice, curr)}</td>
             <td class="text-right font-bold">${formatMoney(unitPrice * qty, curr)}</td>
-            <td>${escapeHtml(h.note || '-')}</td>
+            <td class="print-wrap">${escapeHtml(h.note || '-')}</td>
           </tr>
         `;
       }).join('');
@@ -1531,14 +1694,41 @@
         btn.innerText = 'កត់ត្រាចេញស្តុក';
       }
 
+      document.getElementById('stockEditHistoryId').value = '';
+      document.getElementById('stockModalSearchInput').readOnly = false;
       document.getElementById('stockModalSearchInput').value = '';
-      populateItemSelectForStock('');
+      document.getElementById('stockItemSelect').value = '';
+      hideStockSuggestions();
 
-      if (defaultItemId) document.getElementById('stockItemSelect').value = defaultItemId;
+      if (defaultItemId) pickStockItem(defaultItemId, false);
       onStockItemSelectChanged();
       document.getElementById('stockQtyInput').value = '';
       document.getElementById('stockNoteInput').value = '';
       document.getElementById('stockActionModal').classList.remove('hidden');
+    };
+
+    // Edit a history record in the same Stock In/Out form; item and IN/OUT type stay locked
+    window.openEditHistory = function(recordId) {
+      const h = window.appState.history.find(x => x.id === recordId);
+      if (!h) return;
+      if (!window.appState.items.some(i => i.id === h.itemId)) {
+        showToast(`មិនអាចកែបានទេ ទំនិញ "${h.itemName || ''}" មិនមានក្នុងស្តុកទៀតទេ`, 'error');
+        return;
+      }
+      openStockModal(h.type, h.itemId);
+      document.getElementById('stockEditHistoryId').value = recordId;
+      document.getElementById('stockModalSearchInput').readOnly = true;
+      document.getElementById('stockModalTitle').innerHTML = `<i class="fa-solid fa-pen-to-square mr-2"></i><span>កែប្រែ${h.type === 'IN' ? 'ការនាំចូល' : 'ការនាំចេញ'} (Edit)</span>`;
+      document.getElementById('stockSubmitBtn').innerText = 'រក្សាទុកការកែប្រែ';
+      document.getElementById('stockQtyInput').value = Number(h.quantity || 0);
+      document.getElementById('stockUnitPriceInput').value = Number(h.unitPrice || 0);
+      document.getElementById('stockNoteInput').value = h.note === '-' ? '' : (h.note || '');
+      if (h.timestamp) {
+        const d = new Date(h.timestamp);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        document.getElementById('stockDateInput').value = d.toISOString().slice(0, 16);
+      }
+      document.getElementById('stockQtyInput').focus();
     };
 
     window.closeStockModal = function() { document.getElementById('stockActionModal').classList.add('hidden'); };
@@ -1578,9 +1768,46 @@
       const note = document.getElementById('stockNoteInput').value.trim() || '-';
 
       const item = window.appState.items.find(i => i.id === itemId);
-      if (!item) return;
+      if (!item) {
+        showToast('សូមជ្រើសរើសទំនិញពីបញ្ជីជាមុនសិន', 'warning');
+        document.getElementById('stockModalSearchInput').focus();
+        return;
+      }
 
       const currentQty = Number(item.quantity || 0);
+      const timestamp = dateVal ? new Date(dateVal).toISOString() : new Date().toISOString();
+
+      // Editing an existing record: undo its old quantity, apply the new one, in one atomic write
+      const editId = document.getElementById('stockEditHistoryId').value;
+      if (editId) {
+        const old = window.appState.history.find(x => x.id === editId);
+        if (!old) {
+          showToast('រកមិនឃើញកំណត់ត្រានេះទេ (ប្រហែលជាត្រូវបានលុប)', 'error');
+          return;
+        }
+        const effect = q => (type === 'IN' ? q : -q);
+        const newStock = currentQty - effect(Number(old.quantity || 0)) + effect(qty);
+        if (newStock < 0) {
+          showToast(`មិនអាចកែបានទេ! ស្តុក "${item.name}" នឹងនៅសល់ ${newStock} ${item.unit || ''}`, 'error');
+          return;
+        }
+        try {
+          await db.ref().update({
+            [`history/${editId}/quantity`]: qty,
+            [`history/${editId}/unitPrice`]: unitPrice,
+            [`history/${editId}/note`]: note,
+            [`history/${editId}/timestamp`]: timestamp,
+            [`items/${itemId}/quantity`]: newStock
+          });
+          closeStockModal();
+          showToast(`បានកែប្រែកំណត់ត្រា ស្តុក "${item.name}": ${currentQty} → ${newStock}`, 'success');
+        } catch (err) {
+          console.error(err);
+          showToast('មានបញ្ហាក្នុងការកែប្រែ', 'error');
+        }
+        return;
+      }
+
       if (type === 'OUT' && currentQty < qty) {
         showToast(`ស្តុកមិនគ្រប់គ្រាន់ទេ! សល់ត្រឹមតែ ${currentQty} ${item.unit}`, 'error');
         return;
@@ -1596,7 +1823,7 @@
         unit: item.unit || 'ឯកតា',
         unitPrice,
         currency: item.currency || 'USD',
-        timestamp: dateVal ? new Date(dateVal).toISOString() : new Date().toISOString(),
+        timestamp,
         note
       };
 
@@ -1936,9 +2163,7 @@
         renderUnits();
         populateCategoryDefaultUnitSelect();
       } else if (tabName === 'backup') {
-        document.getElementById('tabContentBackup').classList.remove('hidden');
-        document.getElementById('tabBtnBackup').classList.add('text-blue-700', 'dark:text-blue-400', 'bg-blue-100', 'dark:bg-blue-900/40');
-        document.getElementById('tabBtnBackup').classList.remove('text-slate-600', 'dark:text-slate-300');
+        document.getElementById('tabContentBackup').classList.remove('hidden'); // opened from the Cloud Sync badge, no nav tab
       }
     };
 
