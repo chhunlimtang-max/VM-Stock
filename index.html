@@ -277,7 +277,7 @@
 
     <!-- Navigation Tabs -->
     <div class="hidden sm:block bg-slate-50 dark:bg-slate-800/80 border-t border-slate-200 dark:border-slate-700 px-4 sm:px-6 lg:px-8">
-      <!-- auto margins center the tabs but still let them scroll on phones (justify-center would clip the first tab) -->
+      <!-- auto margins center the tabs but still let them scroll on narrow screens (justify-center would clip the first tab); phones use the bottom tab bar instead -->
       <div class="max-w-7xl mx-auto flex gap-2 overflow-x-auto custom-scrollbar py-2.5 [&>*:first-child]:ml-auto [&>*:last-child]:mr-auto">
         <button id="tabBtnItems" onclick="switchTab('items')" class="nav-tab px-5 sm:px-8 py-3 text-base sm:text-lg font-bold rounded-2xl text-blue-700 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/40 whitespace-nowrap transition flex items-center space-x-2">
           <i class="fa-solid fa-box-archive text-xl"></i>
@@ -927,7 +927,7 @@
     </div>
   </div>
 
-  <!-- Phone only: app-style bottom tab bar + floating stock in/out buttons -->
+  <!-- Phone only: app-style bottom tab bar + fixed stock in/out bar above it -->
   <nav id="mobileTabBar" class="sm:hidden no-print fixed bottom-0 inset-x-0 z-40 grid grid-cols-3 bg-white/95 dark:bg-slate-800/95 backdrop-blur border-t border-slate-200 dark:border-slate-700">
     <button data-mtab="items" onclick="switchTab('items')" class="m-tab m-active">
       <i class="fa-solid fa-box-archive"></i><span>ទំនិញ</span>
@@ -1129,7 +1129,8 @@
       window.appState.items = val ? Object.keys(val).map(k => ({ id: k, ...val[k] })) : [];
       renderItems();
       updateKPICards();
-      populateItemSelectForStock();
+      // keep what the user is typing in the Stock In/Out search when another device saves
+      populateItemSelectForStock(document.getElementById('stockModalSearchInput').value);
     });
 
     // History loads the newest N records; the "load older" button raises N by 200 (keeps opening fast)
@@ -1697,8 +1698,7 @@
     window.filterHistory = function() { window.appState.historyPage = 1; renderHistory(); };
     window.changeHistoryPage = function(delta) { window.appState.historyPage += delta; renderHistory(); };
 
-    // Dedicated A5 Print Report
-    // Print selection helpers
+    // A5 print: tick-box selection helpers, then the report itself
     function updatePrintSelectedCount() {
       const el = document.getElementById('printSelectedCount');
       if (el) el.innerText = `បានជ្រើស ${window.appState.printSelected.size}`;
